@@ -14,6 +14,14 @@ class Administrateur extends Authenticatable
     protected $primaryKey = 'id_admin';
     public $timestamps = false;
 
+
+
+    protected $fillable = [
+        'nom_complet',
+        'email',
+        'mot_de_passe',
+    ];
+
     protected $hidden = [
         'mot_de_passe',
         'remember_token',

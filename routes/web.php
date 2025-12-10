@@ -5,6 +5,7 @@ use App\Http\Controllers\StudentAuthController;
 use App\Http\Controllers\DemandeController;
 use App\Http\Controllers\ReclamationController;
 use App\Http\Controllers\AdminAuthController; // On importe le contrôleur depuis le sous-dossier Admin
+
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GestionDemandeController;
 use App\Http\Controllers\Admin\GestionReclamationController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Admin\GestionReclamationController;
 | Web Routes
 |-------------------------------
 -------------------------------------------
+
 */
 
 // --- ROUTES PUBLIQUES ---
@@ -38,6 +40,7 @@ Route::post('/administration/login', [AdminAuthController::class, 'login'])->nam
 
 
 Route::prefix('admin')->group(function () {
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/demandes', [GestionDemandeController::class, 'index'])->name('admin.demandes');
     Route::get('/demandes/{id}/document', [GestionDemandeController::class, 'showDocument'])->name('admin.demandes.document');
@@ -45,6 +48,7 @@ Route::prefix('admin')->group(function () {
     Route::post('/demandes/{id}/refuser', [GestionDemandeController::class, 'refuser'])->name('admin.demandes.refuser');
     Route::get('/reclamations', [GestionReclamationController::class, 'index'])->name('admin.reclamations');
     Route::post('/reclamations/{id}/traiter', [GestionReclamationController::class, 'traiter'])->name('admin.reclamations.traiter');
+
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 });
 
@@ -81,3 +85,4 @@ Route::get('/reclamation/succes', function() {
     if (!session('etudiant')) { return redirect()->route('home'); }
     return view('reclamation_succes');
 })->name('reclamation.succes');
+

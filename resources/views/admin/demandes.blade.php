@@ -88,6 +88,7 @@
                                             Attestation de Scolarité
                                         </a>
                                         @break
+
                                     @case('releve_notes') Relevé de Notes @break
                                     @case('reussite') Attestation de Réussite @break
                                     @case('non_redoublement') Non-Redoublement @break

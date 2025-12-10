@@ -17,7 +17,7 @@
                 </div>
             </div>
             <div class="col-lg-6 order-1 order-lg-2 hero-img" data-aos="zoom-out" data-aos-delay="200">
-                <img src="{{ asset('assets/img/hero-img.png') }}" class="img-fluid animated" alt="Illustration d'étudiants">
+                <img src="{{ asset('assets/img/hero.png') }}" class="img-fluid animated" alt="Illustration d'étudiants">
             </div>
         </div>
     </div>

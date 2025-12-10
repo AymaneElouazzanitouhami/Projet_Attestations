@@ -7,10 +7,12 @@ use Illuminate\Http\Request;
 use App\Models\Demande;
 use App\Models\HistoriqueAction;
 use Illuminate\Support\Facades\Auth;
+
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DemandeValideeMail;
 use App\Mail\DemandeRefuseeMail;
+
 use Carbon\Carbon;
 
 class GestionDemandeController extends Controller
@@ -38,6 +40,7 @@ class GestionDemandeController extends Controller
         return view('admin.demandes', compact('demandes'));
     }
 
+
     public function showDocument($id)
     {
         $demande = Demande::with('etudiant')->findOrFail($id);
@@ -51,6 +54,7 @@ class GestionDemandeController extends Controller
 
         return $pdf->stream('attestation_scolarite_'.$demande->id_demande.'.pdf');
     }
+
 
     // Action : VALIDER une demande
     public function valider($id)
@@ -90,12 +94,14 @@ class GestionDemandeController extends Controller
             'date_traitement' => now()
         ]);
 
+
         if ($demande->type_document === 'scolarite') {
             $pdf = Pdf::loadView('pdf.attestation_template', compact('demande', 'etudiant'));
             $pdfContent = $pdf->output();
 
             Mail::to($etudiant->email)->send(new DemandeValideeMail($demande, $etudiant, $pdfContent));
         }
+
 
         // 4. Historique
         HistoriqueAction::create([
@@ -112,7 +118,9 @@ class GestionDemandeController extends Controller
     // Action : REFUSER une demande
     public function refuser(Request $request, $id)
     {
+
         $demande = Demande::with('etudiant')->findOrFail($id);
+
         
         // Récupération du motif (valeur par défaut si non fourni)
         $motif = $request->input('motif_refus', 'Critères non remplis.');
@@ -123,8 +131,8 @@ class GestionDemandeController extends Controller
             'date_traitement' => now(),
             'motif_refus' => $motif
         ]);
-
         Mail::to($demande->etudiant->email)->send(new DemandeRefuseeMail($demande, $motif));
+
 
         HistoriqueAction::create([
             'id_demande' => $demande->id_demande,

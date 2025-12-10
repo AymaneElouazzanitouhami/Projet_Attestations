@@ -46,6 +46,7 @@ class DashboardController extends Controller
             $dataGraphique[] = $demandesParMois[$i] ?? 0;
         }
 
+<<<<<<< HEAD
         // 5. Répartition des réclamations (pour le graphique camembert)
         $reclamationsParStatut = Reclamation::select('statut', DB::raw('count(*) as total'))
                                             ->groupBy('statut')

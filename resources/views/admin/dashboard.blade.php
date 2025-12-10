@@ -55,7 +55,9 @@
     </div>
 
     <!-- [ Graphique Principal ] -->
+
     <div class="col-md-12 col-xl-7 col-xxl-8">
+
       <div class="card">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between mb-3">
@@ -92,6 +94,7 @@
         </div>
       </div>
     </div>
+
     
     <!-- [ Historique Récent ] -->
     <div class="col-md-12 col-xl-4">
@@ -204,6 +207,7 @@
       setTimeout(function () {
         // Exemple : Injection des données PHP pour le graphique (si supporté par dashboard-default.js)
         // var dataPHP = @json($dataGraphique ?? []); 
+
 
         const reclamationChartData = @json($reclamationsChart ?? ['labels' => [], 'series' => []]);
 
