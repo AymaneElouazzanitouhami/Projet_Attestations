@@ -95,6 +95,7 @@
             <p>Le Directeur de l'École Nationale des Sciences Appliquées de Tétouan atteste que l'étudiant(e) :</p>
 
             <div class="student-info" style="margin-left: 20px; border-left: 4px solid #ddd; padding-left: 10px;">
+                <p>Numéro de demande : <span class="strong">{{ $demande->id_demande }}</span></p>
                 <p>Nom et Prénom : <span class="strong">{{ strtoupper($etudiant->nom ?? '') }} {{ ucfirst($etudiant->prenom ?? '') }}</span></p>
                 <p>Code Apogée : <span class="strong">{{ $etudiant->numero_apogee ?? 'N/A' }}</span></p>
                 <p>CIN : <span class="strong">{{ $etudiant->cin ?? 'N/A' }}</span></p>
@@ -124,15 +125,25 @@
             @elseif($demande->type_document == 'releve_notes')
                 <p>A obtenu les résultats suivants :</p>
                 @php
-                    // Normaliser le semestre demandé (ex: 1 ou S1 -> 1)
-                    $demandeSem = isset($demande->semestre) ? preg_replace('/[^0-9]/', '', (string)$demande->semestre) : '1';
-                    $demandeAnnee = $demande->annee_universitaire ?? '';
+                    // Get year from the demand
+                    $demandeAnnee = trim((string)($demande->annee_universitaire ?? ''));
 
-                    // Filtrer les notes de l'étudiant pour l'année et le semestre demandés
-                    $filteredNotes = $etudiant->notes->filter(function($n) use ($demandeAnnee, $demandeSem) {
-                        $noteSem = preg_replace('/[^0-9]/', '', (string)$n->semestre);
-                        return trim($n->annee_universitaire) == trim($demandeAnnee) && $noteSem == $demandeSem;
-                    });
+                    // Filter the student's notes by year only (show both S1 and S2)
+                    $filteredNotes = collect();
+                    
+                    if ($etudiant->notes && count($etudiant->notes) > 0) {
+                        $filteredNotes = $etudiant->notes->filter(function($n) use ($demandeAnnee) {
+                            $noteAnnee = trim((string)$n->annee_universitaire);
+                            
+                            // Match only the year (case-insensitive, trimmed)
+                            return strtolower($noteAnnee) == strtolower($demandeAnnee);
+                        });
+                        
+                        // If no notes found for the requested year, show all notes as fallback
+                        if ($filteredNotes->isEmpty() && count($etudiant->notes) > 0) {
+                            $filteredNotes = $etudiant->notes;
+                        }
+                    }
                 @endphp
 
                 <table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; margin-top: 15px;">
@@ -142,16 +153,20 @@
                         <th>Résultat</th>
                     </tr>
 
-                    @if($filteredNotes->isEmpty())
+                    @if(!$etudiant->notes || count($etudiant->notes) == 0)
                         <tr>
-                            <td colspan="3" style="text-align: center; color: #999;">Aucune note disponible</td>
+                            <td colspan="3" style="text-align: center; color: #999;">Aucune note disponible pour cet étudiant</td>
+                        </tr>
+                    @elseif($filteredNotes->isEmpty())
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: #999;">Aucune note disponible pour l'année {{ $demandeAnnee ?? 'demandée' }}</td>
                         </tr>
                     @else
                         @foreach($filteredNotes as $note)
                             <tr>
-                                <td>{{ $note->module_name }}</td>
-                                <td>{{ number_format($note->note, 2) }}</td>
-                                <td>{{ $note->resultat }}</td>
+                                <td>{{ $note->module_name ?? 'N/A' }}</td>
+                                <td>{{ isset($note->note) ? number_format($note->note, 2) : 'N/A' }}</td>
+                                <td>{{ $note->resultat ?? 'N/A' }}</td>
                             </tr>
                         @endforeach
                     @endif
@@ -160,7 +175,7 @@
                         <td colspan="2" style="text-align: right;">Moyenne Générale :</td>
                         <td>
                             @php
-                                $moyenne = $filteredNotes->isNotEmpty() ? number_format($filteredNotes->avg('note'), 2) : '0.00';
+                                $moyenne = ($filteredNotes && !$filteredNotes->isEmpty()) ? number_format($filteredNotes->avg('note'), 2) : '0.00';
                             @endphp
                             {{ $moyenne }}
                         </td>

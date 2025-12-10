@@ -22,9 +22,10 @@ class GestionDemandeController extends Controller
     {
         $query = Demande::with('etudiant')->latest('date_demande');
 
-        // Filtre par statut
-        if ($request->has('statut') && $request->statut !== 'all') {
-            $query->where('statut', $request->statut);
+        // Filtre par statut — par défaut on affiche les demandes "en_attente"
+        $statut = $request->input('statut', 'en_attente');
+        if ($statut !== 'all') {
+            $query->where('statut', $statut);
         }
 
         // Recherche par Code Apogée
@@ -35,7 +36,8 @@ class GestionDemandeController extends Controller
             });
         }
 
-        $demandes = $query->paginate(10);
+        // Paginate and preserve query string (including the statut we used)
+        $demandes = $query->paginate(10)->appends(array_merge($request->except('page'), ['statut' => $statut]));
 
         return view('admin.demandes', compact('demandes'));
     }

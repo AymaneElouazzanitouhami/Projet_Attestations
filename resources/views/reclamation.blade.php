@@ -50,6 +50,11 @@
                                 </select>
                             </div>
 
+                                <div class="col-12">
+                                    <label for="numero_demande_concerne">Numéro de demande concernée</label>
+                                    <input type="text" class="form-control" name="numero_demande_concerne" placeholder="Ex: 123" required>
+                                </div>
+
                             <div class="col-12">
                                 <label for="sujet">Sujet</label>
                                 <input type="text" class="form-control" name="sujet" placeholder="Sujet de votre réclamation" required>
