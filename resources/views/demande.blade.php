@@ -28,12 +28,12 @@
                 @endif
 
                 <!-- Formulaire Dynamique avec Alpine.js -->
-                <div x-data="{ niveau: '{{ old('niveau_actuel') }}', documentType: '{{ old('type_document') }}' }">
+                <div x-data="{ niveau: '{{ old('niveau_actuel') }}', documentType: '{{ old('type_document') }}', isReclamation: false, formAction: '{{ route('demande.store') }}' }" x-effect="isReclamation = (documentType === 'reclamation'); formAction = isReclamation ? '{{ route('reclamation.store') }}' : '{{ route('demande.store') }}';">
                     
                     {{-- ASTUCE : On place la classe "php-email-form" sur un div parent --}}
                     {{-- pour récupérer les styles du template SANS activer le script JS qui bloquait la soumission. --}}
                     <div class="php-email-form">
-                        <form action="{{ route('demande.store') }}" method="post">
+                        <form action="{{ route('demande.store') }}" :action="formAction" method="post">
                             @csrf
                             <div class="row gy-4">
                                 
@@ -63,12 +63,12 @@
                                 <hr class="my-4">
 
                                 <!-- Champs de la Demande -->
-                                <div class="col-12"><h5 class="form-subtitle">Détails de la demande</h5></div>
+                                <div class="col-12"><h5 class="form-subtitle" x-text="isReclamation ? 'Détails de la réclamation' : 'Détails de la demande'">Détails de la demande</h5></div>
                                 
-                                <div class="row gx-3">
+                                <div class="row gx-3" x-show="!isReclamation" style="display: none;">
                                     <div class="col-md-6">
                                         <label for="niveau_actuel">Niveau Actuel</label>
-                                        <select class="form-select" name="niveau_actuel" x-model="niveau" required>
+                                        <select class="form-select" name="niveau_actuel" x-model="niveau" :required="!isReclamation">
                                             <option value="" disabled selected>-- Choisissez un niveau --</option>
                                             <option value="2ap1">2AP1</option>
                                             <option value="2ap2">2AP2</option>
@@ -78,10 +78,10 @@
                                         </select>
                                     </div>
         
-                                    <template x-if="['ci1', 'ci2', 'ci3'].includes(niveau)">
+                                    <template x-if="!isReclamation && ['ci1', 'ci2', 'ci3'].includes(niveau)">
     <div class="col-md-6">
         <label for="filiere">Filière</label>
-        <select class="form-select" name="filiere" required>
+        <select class="form-select" name="filiere" :required="!isReclamation && ['ci1', 'ci2', 'ci3'].includes(niveau)">
             <option value="" disabled selected>-- Choisissez une filière --</option>
             
             <option value="Génie Informatique">Génie Informatique</option>
@@ -106,19 +106,50 @@
                                             <option value="releve_notes">Relevé de Notes</option>
                                             <option value="reussite">Attestation de Réussite</option>
                                             <option value="non_redoublement">Attestation de Non-Redoublement</option>
+                                            <option value="reclamation">Réclamation</option>
                                         </select>
                                     </div>
         
-                                    <template x-if="['releve_notes', 'reussite', 'non_redoublement'].includes(documentType)">
+                                    <template x-if="!isReclamation && ['releve_notes', 'reussite', 'non_redoublement'].includes(documentType)">
                                         <div class="col-md-6">
                                             <label for="annee_universitaire">Année concernée</label>
-                                            <input type="text" name="annee_universitaire" class="form-control" placeholder="Ex: 2023-2024" value="{{ old('annee_universitaire') }}" required>
+                                            <input type="text" name="annee_universitaire" class="form-control" placeholder="Ex: 2023-2024" value="{{ old('annee_universitaire') }}" :required="!isReclamation && ['releve_notes', 'reussite', 'non_redoublement'].includes(documentType)">
                                         </div>
                                     </template>
                                 </div>
 
+                                <div x-show="isReclamation" style="display: none;">
+                                    <hr class="my-4">
+
+                                    <div class="col-12">
+                                        <label for="type_document_concerne">Type d'attestation concernée</label>
+                                        <select class="form-select" name="type_document_concerne" :required="isReclamation">
+                                            <option value="" disabled selected>-- Choisissez le type de document --</option>
+                                            <option value="scolarite">Attestation de Scolarité</option>
+                                            <option value="releve_notes">Relevé de Notes</option>
+                                            <option value="reussite">Attestation de Réussite</option>
+                                            <option value="non_redoublement">Attestation de Non-Redoublement</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label for="numero_demande_concerne">Numéro de demande concernée</label>
+                                        <input type="text" class="form-control" name="numero_demande_concerne" placeholder="Ex: 123" value="{{ old('numero_demande_concerne') }}" :required="isReclamation">
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label for="sujet">Sujet</label>
+                                        <input type="text" class="form-control" name="sujet" placeholder="Sujet de votre réclamation" value="{{ old('sujet') }}" :required="isReclamation">
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label for="description">Description détaillée</label>
+                                        <textarea class="form-control" name="description" rows="5" placeholder="Décrivez précisément votre problème" :required="isReclamation">{{ old('description') }}</textarea>
+                                    </div>
+                                </div>
+
                                 <div class="col-12 text-center mt-5">
-                                    <button type="submit">Envoyer la Demande</button>
+                                    <button type="submit" x-text="isReclamation ? 'Envoyer la Réclamation' : 'Envoyer la Demande'">Envoyer la Demande</button>
                                 </div>
                             </div>
                         </form>
@@ -136,4 +167,3 @@
 </section><!-- /Form Section -->
 
 @endsection
-

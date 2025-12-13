@@ -13,23 +13,29 @@ class DemandeValideeMail extends Mailable
 
     public Demande $demande;
     public $etudiant;
-    protected string $pdfContent;
+    public ?string $pdfContent;
+    public ?string $fileName;
 
-    public function __construct(Demande $demande, $etudiant, string $pdfContent)
+    public function __construct(Demande $demande, $etudiant, ?string $pdfContent = null, ?string $fileName = null)
     {
         $this->demande = $demande;
         $this->etudiant = $etudiant;
         $this->pdfContent = $pdfContent;
+        $this->fileName = $fileName ?? 'attestation.pdf';
     }
 
     public function build(): self
     {
-        $fileName = 'attestation_scolarite.pdf';
+        $mail = $this->subject("Votre attestation - ENSA Tétouan")
+                     ->view('emails.demande_validee');
 
-        return $this->subject("Votre attestation de scolarité - ENSA Tétouan")
-                    ->view('emails.demande_validee')
-                    ->attachData($this->pdfContent, $fileName, [
-                        'mime' => 'application/pdf',
-                    ]);
+        // Attacher le PDF uniquement s'il existe
+        if ($this->pdfContent) {
+            $mail->attachData($this->pdfContent, $this->fileName, [
+                'mime' => 'application/pdf',
+            ]);
+        }
+
+        return $mail;
     }
 }

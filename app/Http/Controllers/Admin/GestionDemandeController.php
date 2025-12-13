@@ -7,12 +7,12 @@ use Illuminate\Http\Request;
 use App\Models\Demande;
 use App\Models\HistoriqueAction;
 use Illuminate\Support\Facades\Auth;
-
-use Barryvdh\DomPDF\Facade\Pdf;
+use Barryvdh\DomPDF\Facade\Pdf;  
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use App\Mail\DemandeValideeMail;
 use App\Mail\DemandeRefuseeMail;
-
 use Carbon\Carbon;
 
 class GestionDemandeController extends Controller
@@ -22,9 +22,10 @@ class GestionDemandeController extends Controller
     {
         $query = Demande::with('etudiant')->latest('date_demande');
 
-        // Filtre par statut
-        if ($request->has('statut') && $request->statut !== 'all') {
-            $query->where('statut', $request->statut);
+        // Filtre par statut — par défaut on affiche les demandes "en_attente"
+        $statut = $request->input('statut', 'en_attente');
+        if ($statut !== 'all') {
+            $query->where('statut', $statut);
         }
 
         // Recherche par Code Apogée
@@ -35,31 +36,42 @@ class GestionDemandeController extends Controller
             });
         }
 
-        $demandes = $query->paginate(10);
+        // Paginate and preserve query string (including the statut we used)
+        $demandes = $query->paginate(10)->appends(array_merge($request->except('page'), ['statut' => $statut]));
 
         return view('admin.demandes', compact('demandes'));
     }
 
-
+    // Afficher le document PDF
     public function showDocument($id)
     {
-        $demande = Demande::with('etudiant')->findOrFail($id);
+        $demande = Demande::with('etudiant.notes')->findOrFail($id);
         $etudiant = $demande->etudiant;
 
-        if ($demande->type_document !== 'scolarite') {
-            abort(404);
+        // Vérifier que le type de document est supporté
+        if (!in_array($demande->type_document, ['scolarite', 'non_redoublement', 'reussite', 'releve_notes'])) {
+            abort(404, 'Ce type de document n\'est pas disponible en PDF.');
         }
 
+        // Tous les types utilisent la même vue
         $pdf = Pdf::loadView('pdf.attestation_template', compact('demande', 'etudiant'));
 
-        return $pdf->stream('attestation_scolarite_'.$demande->id_demande.'.pdf');
-    }
+        // Nom du fichier selon le type
+        $fileNames = [
+            'scolarite' => 'attestation_scolarite_',
+            'non_redoublement' => 'attestation_non_redoublement_',
+            'reussite' => 'attestation_reussite_',
+            'releve_notes' => 'releve_notes_'
+        ];
 
+        $fileName = $fileNames[$demande->type_document] ?? 'attestation_';
+        return $pdf->stream($fileName . $demande->id_demande . '.pdf');
+    }
 
     // Action : VALIDER une demande
     public function valider($id)
     {
-        $demande = Demande::with('etudiant')->findOrFail($id);
+        $demande = Demande::with('etudiant.notes')->findOrFail($id);
         $etudiant = $demande->etudiant;
 
         // --- LOGIQUE DE VÉRIFICATION DES CONTRAINTES STATIQUES ---
@@ -90,18 +102,40 @@ class GestionDemandeController extends Controller
         // 1. Mise à jour BDD
         $demande->update([
             'statut' => 'validee',
-            'id_admin_traitant' => Auth::guard('admin')->id(), // Assurez-vous d'utiliser le bon guard
+            'id_admin_traitant' => Auth::guard('admin')->id(),
             'date_traitement' => now()
         ]);
 
+        // 2. Génération du PDF selon le type de document
+        $pdfContent = null;
+        $fileName = null;
 
-        if ($demande->type_document === 'scolarite') {
+        if (in_array($demande->type_document, ['scolarite', 'non_redoublement', 'reussite', 'releve_notes'])) {
+            // Tous les types utilisent la même vue
             $pdf = Pdf::loadView('pdf.attestation_template', compact('demande', 'etudiant'));
             $pdfContent = $pdf->output();
-
-            Mail::to($etudiant->email)->send(new DemandeValideeMail($demande, $etudiant, $pdfContent));
+            
+            // Noms de fichier selon le type
+            $fileNames = [
+                'scolarite' => 'attestation_scolarite.pdf',
+                'non_redoublement' => 'attestation_non_redoublement.pdf',
+                'reussite' => 'attestation_reussite.pdf',
+                'releve_notes' => 'releve_notes.pdf'
+            ];
+            
+            $fileName = $fileNames[$demande->type_document] ?? 'attestation.pdf';
+            
+            // Sauvegarder aussi le PDF dans le stockage pour archivage
+            $filePath = 'attestations/' . $demande->id_demande . '_' . $fileName;
+            Storage::disk('public')->put($filePath, $pdfContent);
         }
 
+        // 3. Envoi de l'email avec le PDF en pièce jointe
+        try {
+            Mail::to($etudiant->email)->send(new DemandeValideeMail($demande, $etudiant, $pdfContent, $fileName));
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'envoi de l\'email: ' . $e->getMessage());
+        }
 
         // 4. Historique
         HistoriqueAction::create([
@@ -118,9 +152,7 @@ class GestionDemandeController extends Controller
     // Action : REFUSER une demande
     public function refuser(Request $request, $id)
     {
-
-        $demande = Demande::with('etudiant')->findOrFail($id);
-
+        $demande = Demande::with('etudiant.notes')->findOrFail($id);
         
         // Récupération du motif (valeur par défaut si non fourni)
         $motif = $request->input('motif_refus', 'Critères non remplis.');
@@ -131,8 +163,8 @@ class GestionDemandeController extends Controller
             'date_traitement' => now(),
             'motif_refus' => $motif
         ]);
-        Mail::to($demande->etudiant->email)->send(new DemandeRefuseeMail($demande, $motif));
 
+        Mail::to($demande->etudiant->email)->send(new DemandeRefuseeMail($demande, $motif));
 
         HistoriqueAction::create([
             'id_demande' => $demande->id_demande,

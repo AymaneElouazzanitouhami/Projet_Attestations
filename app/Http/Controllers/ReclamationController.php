@@ -19,40 +19,51 @@ class ReclamationController extends Controller
         if (!$etudiant) {
             return redirect()->route('home')->withErrors('Votre session a expiré. Veuillez vous reconnecter.');
         }
-
+        
         // 2. Valider les données de base du formulaire
         $validator = Validator::make($request->all(), [
             'type_document_concerne' => 'required|string',
+            'numero_demande_concerne' => 'required|integer',
             'sujet' => 'required|string|max:255',
             'description' => 'required|string',
         ]);
-
+        
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
-
+        
         $typeDocumentConcerne = $request->input('type_document_concerne');
+        $numeroDemandeConcerne = (int) $request->input('numero_demande_concerne');
+        
+        // 3. VÉRIFICATION : le numéro de demande doit exister et appartenir à l'étudiant
+        $demandeConcernee = Demande::where('id_demande', $numeroDemandeConcerne)
+            ->where('id_etudiant', $etudiant->id_etudiant)
+            ->where('type_document', $typeDocumentConcerne)
+            ->first();
 
-        // 3. VÉRIFICATION CRUCIALE : L'étudiant a-t-il déjà fait une demande de ce type ?
-        $demandePrecedente = Demande::where('id_etudiant', $etudiant->id_etudiant)
-                                    ->where('type_document', $typeDocumentConcerne)
-                                    ->latest('date_demande') // On prend la plus récente pour la lier
-                                    ->first();
-
-        if (!$demandePrecedente) {
-            // Si aucune demande de ce type n'a été trouvée, on renvoie une erreur.
-            return back()->withErrors(['inexistante' => 'Vous ne pouvez pas déposer de réclamation pour ce type de document car vous n\'en avez jamais fait la demande.'])->withInput();
+        if (!$demandeConcernee) {
+            return back()->withErrors([
+                'numero_demande_concerne' => 'Numéro de demande invalide (ou ne correspond pas au type choisi / ne vous appartient pas).'
+            ])->withInput();
         }
         
-        // 4. ENREGISTREMENT DE LA RÉCLAMATION
-        $reclamation = new Reclamation();
-        $reclamation->id_demande_concernee = $demandePrecedente->id_demande; // On lie à la demande la plus récente
-        $reclamation->id_etudiant = $etudiant->id_etudiant;
-        $reclamation->sujet = $request->input('sujet');
-        $reclamation->description = $request->input('description');
-        $reclamation->date_reclamation = now();
-        $reclamation->save();
-
+        // 4. ENREGISTREMENT DE LA RÉCLAMATION (avec gestion d'erreurs)
+        try {
+            $reclamation = Reclamation::create([
+                'id_demande_concernee' => $demandeConcernee->id_demande,
+                'id_etudiant' => $etudiant->id_etudiant,
+                'sujet' => $request->input('sujet'),
+                'description' => $request->input('description'),
+                'date_reclamation' => now(),
+                'statut' => 'soumise',
+            ]);
+        } catch (\Exception $e) {
+            logger()->error('Erreur lors de la création d\'une réclamation: ' . $e->getMessage());
+            return back()->withErrors([
+                'save_error' => 'Une erreur est survenue lors de l\'enregistrement de votre réclamation. Veuillez réessayer plus tard.'
+            ])->withInput();
+        }
+        
         // 5. REDIRECTION VERS LA PAGE DE SUCCÈS
         return redirect()->route('reclamation.succes');
     }

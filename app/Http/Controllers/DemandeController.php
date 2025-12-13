@@ -7,6 +7,8 @@ use App\Models\Demande;
 use App\Models\Etudiant;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class DemandeController extends Controller
 {
@@ -19,6 +21,10 @@ class DemandeController extends Controller
         $etudiantSession = session('etudiant');
         if (!$etudiantSession) {
             return redirect()->route('home')->withErrors('Votre session a expiré. Veuillez vous reconnecter.');
+        }
+
+        if ($request->input('type_document') === 'reclamation') {
+            return redirect()->route('reclamation.formulaire');
         }
 
         // 2. Valider les données de base du formulaire
@@ -89,6 +95,21 @@ class DemandeController extends Controller
         $demande->annee_universitaire = $anneeUniversitaire;
         $demande->date_demande = now();
         $demande->save();
+
+        try {
+            $recipient = $etudiantFromDB->email ?? ($etudiantSession->email ?? null);
+            if ($recipient) {
+                $idDemande = $demande->id_demande;
+                Mail::raw(
+                    "Votre demande a été enregistrée avec succès.\nNuméro de demande : {$idDemande}\n",
+                    function ($message) use ($recipient, $idDemande) {
+                        $message->to($recipient)->subject("Confirmation de demande #{$idDemande}");
+                    }
+                );
+            }
+        } catch (\Exception $e) {
+            Log::error("Erreur lors de l'envoi de l'email de confirmation de demande: " . $e->getMessage());
+        }
 
         // 7. REDIRECTION VERS LA PAGE DE SUCCÈS
         return redirect()->route('demande.succes');

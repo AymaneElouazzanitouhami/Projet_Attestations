@@ -7,7 +7,19 @@
 <body>
     <p>Bonjour {{ $etudiant->prenom }} {{ $etudiant->nom }},</p>
 
-    <p>Votre demande d'<strong>attestation de scolarité</strong> a été <strong>validée</strong> par le service de scolarité de l'ENSA Tétouan.</p>
+    <p>Votre demande d'<strong>
+        @if($demande->type_document == 'scolarite')
+            attestation de scolarité
+        @elseif($demande->type_document == 'non_redoublement')
+            attestation de non-redoublement
+        @elseif($demande->type_document == 'reussite')
+            attestation de réussite
+        @elseif($demande->type_document == 'releve_notes')
+            relevé de notes
+        @else
+            attestation
+        @endif
+    </strong> a été <strong>validée</strong> par le service de scolarité de l'ENSA Tétouan.</p>
 
     <p>Vous trouverez votre attestation en pièce jointe à ce message, au format PDF.</p>
 

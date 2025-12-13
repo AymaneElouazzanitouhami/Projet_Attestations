@@ -23,6 +23,9 @@ class DemandeRefuseeMail extends Mailable
     public function build(): self
     {
         return $this->subject("Votre demande d'attestation a été refusée")
-                    ->view('emails.demande_refusee');
+                    ->view('emails.demande_refusee', [
+                        'demande' => $this->demande,
+                        'motif' => $this->motif
+                    ]);
     }
 }

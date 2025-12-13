@@ -88,10 +88,21 @@
                                             Attestation de Scolarité
                                         </a>
                                         @break
-
-                                    @case('releve_notes') Relevé de Notes @break
-                                    @case('reussite') Attestation de Réussite @break
-                                    @case('non_redoublement') Non-Redoublement @break
+                                    @case('releve_notes')
+                                        <a href="{{ route('admin.demandes.document', $demande->id_demande) }}" target="_blank" class="text-decoration-underline">
+                                            Relevé de Notes
+                                        </a>
+                                        @break
+                                    @case('reussite')
+                                        <a href="{{ route('admin.demandes.document', $demande->id_demande) }}" target="_blank" class="text-decoration-underline">
+                                            Attestation de Réussite
+                                        </a>
+                                        @break
+                                    @case('non_redoublement')
+                                        <a href="{{ route('admin.demandes.document', $demande->id_demande) }}" target="_blank" class="text-decoration-underline">
+                                            Non-Redoublement
+                                        </a>
+                                        @break
                                 @endswitch
                             </span>
                             @if($demande->type_document == 'releve_notes')

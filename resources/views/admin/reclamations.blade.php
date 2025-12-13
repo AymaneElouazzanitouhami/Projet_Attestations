@@ -28,9 +28,9 @@
         <div class="row mb-4 align-items-center">
             <div class="col-md-6 mb-2">
                 <div class="btn-group" role="group">
-                    <a href="{{ route('admin.reclamations', ['statut' => 'non_traitee']) }}" class="btn {{ request('statut') == 'non_traitee' || !request('statut') ? 'btn-primary' : 'btn-outline-primary' }}">Non traitées</a>
-                    <a href="{{ route('admin.reclamations', ['statut' => 'cloturee']) }}" class="btn {{ request('statut') == 'cloturee' ? 'btn-primary' : 'btn-outline-primary' }}">Clôturées</a>
-                    <a href="{{ route('admin.reclamations', ['statut' => 'all']) }}" class="btn {{ request('statut') == 'all' ? 'btn-primary' : 'btn-outline-primary' }}">Toutes</a>
+                    <a href="{{ route('admin.reclamations', ['statut' => 'non_traitee']) }}" class="btn {{ $statut == 'non_traitee' ? 'btn-primary' : 'btn-outline-primary' }}">Non traitées</a>
+                    <a href="{{ route('admin.reclamations', ['statut' => 'cloturee']) }}" class="btn {{ $statut == 'cloturee' ? 'btn-primary' : 'btn-outline-primary' }}">Clôturées</a>
+                    <a href="{{ route('admin.reclamations', ['statut' => 'all']) }}" class="btn {{ $statut == 'all' ? 'btn-primary' : 'btn-outline-primary' }}">Toutes</a>
                 </div>
             </div>
         </div>
@@ -62,7 +62,10 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <h6 class="mb-0">{{ $reclamation->etudiant->nom }} {{ $reclamation->etudiant->prenom }}</h6>
-                                    <p class="mb-0 text-muted text-sm">Apogée: {{ $reclamation->etudiant->numero_apogee }}</p>
+                                    <p class="mb-0 text-muted text-sm">
+                                        Demande n°:
+                                        {{ $reclamation->demande->id_demande ?? $reclamation->id_demande_concernee }}
+                                    </p>
                                 </div>
                             </div>
                         </td>
