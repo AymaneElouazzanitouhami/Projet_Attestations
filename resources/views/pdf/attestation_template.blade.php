@@ -95,11 +95,16 @@
             <p>Le Directeur de l'École Nationale des Sciences Appliquées de Tétouan atteste que l'étudiant(e) :</p>
 
             <div class="student-info" style="margin-left: 20px; border-left: 4px solid #ddd; padding-left: 10px;">
-                <p>Nom et Prénom : <span class="strong">{{ strtoupper($etudiant->nom) }} {{ ucfirst($etudiant->prenom) }}</span></p>
-                <p>Code Apogée : <span class="strong">{{ $etudiant->numero_apogee }}</span></p>
-                <p>CIN : <span class="strong">{{ $etudiant->cin }}</span></p>
-                <p>Filière : <span class="strong">{{ $etudiant->filiere_actuelle ?? 'Cycle Préparatoire' }}</span></p>
-                <p>Niveau : <span class="strong">{{ $etudiant->niveau_actuel }}ère année</span></p>
+                <p>Numéro de demande : <span class="strong">{{ $demande->id_demande }}</span></p>
+                <p>Nom et Prénom : <span class="strong">{{ strtoupper($etudiant->nom ?? '') }} {{ ucfirst($etudiant->prenom ?? '') }}</span></p>
+                <p>Code Apogée : <span class="strong">{{ $etudiant->numero_apogee ?? 'N/A' }}</span></p>
+                <p>CIN : <span class="strong">{{ $etudiant->cin ?? 'N/A' }}</span></p>
+                @if($etudiant->filiere_actuelle)
+                    <p>Filière : <span class="strong">{{ $etudiant->filiere_actuelle }}</span></p>
+                @endif
+                @if($etudiant->niveau_actuel)
+                    <p>Niveau : <span class="strong">{{ $etudiant->niveau_actuel }}ère année</span></p>
+                @endif
             </div>
 
             <!-- Contenu Dynamique selon le type -->
@@ -113,34 +118,67 @@
 
             @elseif($demande->type_document == 'non_redoublement')
                 <p>A poursuivi ses études au sein de notre établissement sans aucun redoublement depuis son inscription initiale.</p>
+                @if($demande->annee_universitaire)
+                    <p>Année universitaire : <strong>{{ $demande->annee_universitaire }}</strong></p>
+                @endif
             
             @elseif($demande->type_document == 'releve_notes')
-                <p>A obtenu les résultats suivants (Simulation) :</p>
+                <p>A obtenu les résultats suivants :</p>
+                @php
+                    // Get year from the demand
+                    $demandeAnnee = trim((string)($demande->annee_universitaire ?? ''));
+
+                    // Filter the student's notes by year only (show both S1 and S2)
+                    $filteredNotes = collect();
+                    
+                    if ($etudiant->notes && count($etudiant->notes) > 0) {
+                        $filteredNotes = $etudiant->notes->filter(function($n) use ($demandeAnnee) {
+                            $noteAnnee = trim((string)$n->annee_universitaire);
+                            
+                            // Match only the year (case-insensitive, trimmed)
+                            return strtolower($noteAnnee) == strtolower($demandeAnnee);
+                        });
+                        
+                        // If no notes found for the requested year, show all notes as fallback
+                        if ($filteredNotes->isEmpty() && count($etudiant->notes) > 0) {
+                            $filteredNotes = $etudiant->notes;
+                        }
+                    }
+                @endphp
+
                 <table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; margin-top: 15px;">
                     <tr style="background-color: #f0f0f0;">
                         <th>Module</th>
                         <th>Note / 20</th>
                         <th>Résultat</th>
                     </tr>
-                    <!-- Exemple statique car nous n'avons pas de table de notes -->
-                    <tr>
-                        <td>Module Technique</td>
-                        <td>15.50</td>
-                        <td>V</td>
-                    </tr>
-                    <tr>
-                        <td>Module Management</td>
-                        <td>14.00</td>
-                        <td>V</td>
-                    </tr>
-                    <tr>
-                        <td>Langues et Communication</td>
-                        <td>16.00</td>
-                        <td>V</td>
-                    </tr>
+
+                    @if(!$etudiant->notes || count($etudiant->notes) == 0)
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: #999;">Aucune note disponible pour cet étudiant</td>
+                        </tr>
+                    @elseif($filteredNotes->isEmpty())
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: #999;">Aucune note disponible pour l'année {{ $demandeAnnee ?? 'demandée' }}</td>
+                        </tr>
+                    @else
+                        @foreach($filteredNotes as $note)
+                            <tr>
+                                <td>{{ $note->module_name ?? 'N/A' }}</td>
+                                <td>{{ isset($note->note) ? number_format($note->note, 2) : 'N/A' }}</td>
+                                <td>{{ $note->resultat ?? 'N/A' }}</td>
+                            </tr>
+                        @endforeach
+                    @endif
+
                     <tr style="font-weight: bold;">
                         <td colspan="2" style="text-align: right;">Moyenne Générale :</td>
-                        <td>15.16</td>
+                        <td>
+                            @php
+                                $moyenne = ($filteredNotes && !$filteredNotes->isEmpty()) ? number_format($filteredNotes->avg('note'), 2) : '0.00';
+                            @endphp
+                            {{ $moyenne }}
+                        </td>
                     </tr>
                 </table>
             @endif
@@ -148,7 +186,7 @@
         </div>
 
         <div class="signature">
-            <p>Fait à Tétouan, le {{ date('d/m/Y') }}</p>
+            <p>Fait à Tétouan, le {{ now()->format('d/m/Y') }}</p>
             <br><br>
             <p style="font-style: italic;">Le Directeur</p>
             <p style="color: #999;">(Signature Électronique)</p>

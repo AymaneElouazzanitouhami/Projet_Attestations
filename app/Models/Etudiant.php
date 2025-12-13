@@ -23,4 +23,9 @@ class Etudiant extends Model
     {
         return $this->hasMany(Demande::class, 'id_etudiant');
     }
+
+    public function notes()
+    {
+        return $this->hasMany(Note::class, 'id_etudiant', 'id_etudiant');
+    }
 }
