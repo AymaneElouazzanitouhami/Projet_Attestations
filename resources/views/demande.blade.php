@@ -12,7 +12,7 @@
             <!-- Colonne du Formulaire (Animation depuis la gauche) -->
             <div class="col-lg-6" data-aos="fade-right">
                 <div class="container section-title">
-                    <h2>Formulaire de Demande</h2>
+                    <h2 x-text="isReclamation ? 'Formulaire de Réclamation' : 'Formulaire de Demande'">Formulaire de Demande</h2>
                     <p>Veuillez compléter les informations ci-dessous.</p>
                 </div>
 
@@ -28,7 +28,59 @@
                 @endif
 
                 <!-- Formulaire Dynamique avec Alpine.js -->
-                <div x-data="{ niveau: '{{ old('niveau_actuel') }}', documentType: '{{ old('type_document') }}', isReclamation: false, formAction: '{{ route('demande.store') }}' }" x-effect="isReclamation = (documentType === 'reclamation'); formAction = isReclamation ? '{{ route('reclamation.store') }}' : '{{ route('demande.store') }}';">
+                <div x-data="{
+                    niveau: '{{ old('niveau_actuel') }}',
+                    documentType: '{{ old('type_document') }}',
+                    requestType: '{{ old('type_demande', isset($preSelectReclamation) && $preSelectReclamation ? 'reclamation' : 'demande') }}',
+                    isReclamation: {{ isset($preSelectReclamation) && $preSelectReclamation ? 'true' : 'false' }},
+                    formAction: '{{ route('demande.store') }}',
+                    selectedYear: '{{ old('annee_universitaire') }}',
+                    etudiantNiveau: {{ $etudiant->niveau_actuel ?? 1 }},
+                    availableYears: [],
+                    init() {
+                        this.isReclamation = (this.requestType === 'reclamation');
+                        this.formAction = this.isReclamation ? '{{ route('reclamation.store') }}' : '{{ route('demande.store') }}';
+                        this.updateAvailableYears();
+                    },
+                    updateAvailableYears() {
+                        if (this.isReclamation) return;
+                        const currentYear = new Date().getFullYear();
+                        const currentMonth = new Date().getMonth();
+                        const academicYearStart = currentMonth >= 8 ? currentYear : currentYear - 1;
+                        
+                        // Map niveau_actuel to year number: 1=2ap1 (Year 1), 2=2ap2 (Year 2), 3=ci1 (Year 3), 4=ci2 (Year 4), 5=ci3 (Year 5)
+                        const studentYear = this.etudiantNiveau;
+                        
+                        // Generate years: only years less than student's current year
+                        this.availableYears = [];
+                        for (let i = studentYear - 1; i >= 1; i--) {
+                            const yearStart = academicYearStart - (studentYear - i);
+                            const yearEnd = yearStart + 1;
+                            this.availableYears.push(yearStart + '-' + yearEnd);
+                        }
+                    },
+                    isFormValid() {
+                        if (!this.requestType) return false;
+                        
+                        if (this.isReclamation) {
+                            // For reclamation: all fields are validated by HTML5 required attributes
+                            // This function just ensures requestType is set
+                            return true;
+                        } else {
+                            // For demande: type_document and niveau_actuel are required
+                            if (!this.documentType || !this.niveau) return false;
+                            
+                            // If document type requires year, year must be selected
+                            const needsYear = ['releve_notes', 'reussite'].includes(this.documentType);
+                            if (needsYear) {
+                                if (!this.selectedYear || this.selectedYear.trim() === '') return false;
+                            }
+                            
+                            // If niveau requires filiere (ci1, ci2, ci3), it's handled by HTML5 required
+                            return true;
+                        }
+                    }
+                }" x-effect="isReclamation = (requestType === 'reclamation'); formAction = isReclamation ? '{{ route('reclamation.store') }}' : '{{ route('demande.store') }}'; this.updateAvailableYears();">
                     
                     {{-- ASTUCE : On place la classe "php-email-form" sur un div parent --}}
                     {{-- pour récupérer les styles du template SANS activer le script JS qui bloquait la soumission. --}}
@@ -65,6 +117,29 @@
                                 <!-- Champs de la Demande -->
                                 <div class="col-12"><h5 class="form-subtitle" x-text="isReclamation ? 'Détails de la réclamation' : 'Détails de la demande'">Détails de la demande</h5></div>
                                 
+                                <!-- Type de demande (Demande ou Réclamation) -->
+                                <div class="col-12 mb-3">
+                                    <label for="type_demande">Type de demande</label>
+                                    <select class="form-select" name="type_demande" x-model="requestType" @change="documentType = ''; isReclamation = (requestType === 'reclamation'); formAction = isReclamation ? '{{ route('reclamation.store') }}' : '{{ route('demande.store') }}';" required>
+                                        <option value="" disabled selected>-- Choisissez un type --</option>
+                                        <option value="demande">Demande</option>
+                                        <option value="reclamation">Réclamation</option>
+                                    </select>
+                                </div>
+
+                                <!-- Type de document (seulement pour les demandes) -->
+                                <div class="col-12 mb-3" x-show="!isReclamation" style="display: none;">
+                                    <label for="type_document">Type d'attestation</label>
+                                    <select class="form-select" name="type_document" x-model="documentType" :required="!isReclamation">
+                                        <option value="" disabled selected>-- Choisissez un document --</option>
+                                        <option value="scolarite">Attestation de Scolarité</option>
+                                        <option value="releve_notes">Relevé de Notes</option>
+                                        <option value="reussite">Attestation de Réussite</option>
+                                        <option value="convention_stage">Convention de Stage</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Niveau et Filière (seulement pour les demandes) -->
                                 <div class="row gx-3" x-show="!isReclamation" style="display: none;">
                                     <div class="col-md-6">
                                         <label for="niveau_actuel">Niveau Actuel</label>
@@ -79,44 +154,34 @@
                                     </div>
         
                                     <template x-if="!isReclamation && ['ci1', 'ci2', 'ci3'].includes(niveau)">
-    <div class="col-md-6">
-        <label for="filiere">Filière</label>
-        <select class="form-select" name="filiere" :required="!isReclamation && ['ci1', 'ci2', 'ci3'].includes(niveau)">
-            <option value="" disabled selected>-- Choisissez une filière --</option>
-            
-            <option value="Génie Informatique">Génie Informatique</option>
-            <option value="Génie Civil">Génie Civil</option>
-            <option value="Génie Mécatronique">Génie Mécatronique</option>
-            
-            <option value="Supply Chain Management">Supply Chain Management</option>
-            <option value="GSTR">GSTR</option>
-            <option value="Data & AI">Data & AI</option>
-            <option value="Cybersécurité">Cybersécurité</option>
-        </select>
-    </div>
-</template>
-                                </div>
-
-                                 <div class="row gx-3 mt-4">
-                                    <div class="col-md-6">
-                                        <label for="type_document">Type d'attestation</label>
-                                        <select class="form-select" name="type_document" x-model="documentType" required>
-                                            <option value="" disabled selected>-- Choisissez un document --</option>
-                                            <option value="scolarite">Attestation de Scolarité</option>
-                                            <option value="releve_notes">Relevé de Notes</option>
-                                            <option value="reussite">Attestation de Réussite</option>
-                                            <option value="non_redoublement">Attestation de Non-Redoublement</option>
-                                            <option value="reclamation">Réclamation</option>
-                                        </select>
-                                    </div>
-        
-                                    <template x-if="!isReclamation && ['releve_notes', 'reussite', 'non_redoublement'].includes(documentType)">
                                         <div class="col-md-6">
-                                            <label for="annee_universitaire">Année concernée</label>
-                                            <input type="text" name="annee_universitaire" class="form-control" placeholder="Ex: 2023-2024" value="{{ old('annee_universitaire') }}" :required="!isReclamation && ['releve_notes', 'reussite', 'non_redoublement'].includes(documentType)">
+                                            <label for="filiere">Filière</label>
+                                            <select class="form-select" name="filiere" :required="!isReclamation && ['ci1', 'ci2', 'ci3'].includes(niveau)">
+                                                <option value="" disabled selected>-- Choisissez une filière --</option>
+                                                <option value="Génie Informatique">Génie Informatique</option>
+                                                <option value="Génie Civil">Génie Civil</option>
+                                                <option value="Génie Mécatronique">Génie Mécatronique</option>
+                                                <option value="Supply Chain Management">Supply Chain Management</option>
+                                                <option value="GSTR">GSTR</option>
+                                                <option value="Data & AI">Data & AI</option>
+                                                <option value="Cybersécurité">Cybersécurité</option>
+                                            </select>
                                         </div>
                                     </template>
                                 </div>
+
+                                <!-- Année universitaire (seulement pour certains types de documents) -->
+                                <template x-if="!isReclamation && ['releve_notes', 'reussite'].includes(documentType)">
+                                    <div class="col-md-6">
+                                        <label for="annee_universitaire">Année concernée</label>
+                                        <select class="form-select" name="annee_universitaire" x-model="selectedYear" :required="!isReclamation && ['releve_notes', 'reussite'].includes(documentType)">
+                                            <option value="" disabled selected>-- Choisissez une année --</option>
+                                            <template x-for="year in availableYears" :key="year">
+                                                <option :value="year" x-text="year"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                </template>
 
                                 <div x-show="isReclamation" style="display: none;">
                                     <hr class="my-4">
@@ -128,7 +193,7 @@
                                             <option value="scolarite">Attestation de Scolarité</option>
                                             <option value="releve_notes">Relevé de Notes</option>
                                             <option value="reussite">Attestation de Réussite</option>
-                                            <option value="non_redoublement">Attestation de Non-Redoublement</option>
+                                            <option value="convention_stage">Convention de Stage</option>
                                         </select>
                                     </div>
 
@@ -149,7 +214,11 @@
                                 </div>
 
                                 <div class="col-12 text-center mt-5">
-                                    <button type="submit" x-text="isReclamation ? 'Envoyer la Réclamation' : 'Envoyer la Demande'">Envoyer la Demande</button>
+                                    <button type="submit" 
+                                            x-text="isReclamation ? 'Envoyer la Réclamation' : 'Envoyer la Demande'"
+                                            :disabled="!isFormValid()"
+                                            :style="!isFormValid() ? 'opacity: 0.6; cursor: not-allowed;' : ''"
+                                            >Envoyer la Demande</button>
                                 </div>
                             </div>
                         </form>

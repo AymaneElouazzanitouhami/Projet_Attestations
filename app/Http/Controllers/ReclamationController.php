@@ -22,10 +22,10 @@ class ReclamationController extends Controller
         
         // 2. Valider les données de base du formulaire
         $validator = Validator::make($request->all(), [
-            'type_document_concerne' => 'required|string',
+            'type_document_concerne' => 'required|string|in:scolarite,releve_notes,reussite,convention_stage',
             'numero_demande_concerne' => 'required|integer',
             'sujet' => 'required|string|max:255',
-            'description' => 'required|string',
+            'description' => 'required|string|min:10',
         ]);
         
         if ($validator->fails()) {

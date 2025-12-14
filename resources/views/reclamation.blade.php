@@ -46,7 +46,7 @@
                                     <option value="scolarite">Attestation de Scolarité</option>
                                     <option value="releve_notes">Relevé de Notes</option>
                                     <option value="reussite">Attestation de Réussite</option>
-                                    <option value="non_redoublement">Attestation de Non-Redoublement</option>
+                                    <option value="convention_stage">Convention de Stage</option>
                                 </select>
                             </div>
 

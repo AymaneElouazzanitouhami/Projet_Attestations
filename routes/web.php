@@ -75,10 +75,10 @@ Route::get('/demande/succes', function() {
     return view('demande_succes');
 })->name('demande.succes');
 
-// Routes pour la Réclamation
+// Routes pour la Réclamation (redirige vers le formulaire unifié)
 Route::get('/reclamation', function () {
     if (!session('etudiant')) { return redirect()->route('home'); }
-    return view('reclamation', ['etudiant' => session('etudiant')]);
+    return view('demande', ['etudiant' => session('etudiant'), 'preSelectReclamation' => true]);
 })->name('reclamation.formulaire');
 Route::post('/reclamation', [ReclamationController::class, 'store'])->name('reclamation.store');
 Route::get('/reclamation/succes', function() {

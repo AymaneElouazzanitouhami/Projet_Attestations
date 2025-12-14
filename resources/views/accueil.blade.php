@@ -77,13 +77,6 @@
                     <p>Confirme la validation de votre cycle ou de votre année universitaire.</p>
                 </div>
             </div><!-- End Service Item -->
-            <div class="col-xl-3 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="400">
-                <div class="service-item position-relative">
-                    <div class="icon"><i class="bi bi-shield-check icon"></i></div>
-                    <h4><a href="#contact" class="stretched-link">Non-Redoublement</a></h4>
-                    <p>Atteste d'un parcours universitaire sans aucun redoublement.</p>
-                </div>
-            </div><!-- End Service Item -->
         </div>
     </div>
 </section><!-- /Services Section -->
@@ -154,27 +147,115 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('student.login') }}" method="post" data-aos="fade-up" data-aos-delay="400">
+                    <form action="{{ route('student.login') }}" method="post" data-aos="fade-up" data-aos-delay="400" id="student-login-form">
                         @csrf
                         <div class="row gy-4">
                             
                             <div class="col-md-12">
-                                <input type="email" name="email" class="form-control" placeholder="Votre Email" value="{{ old('email') }}" required="">
+                                <input type="email" name="email" id="email" class="form-control" placeholder="Votre Email" value="{{ old('email') }}" required="">
+                                <div class="invalid-feedback" id="email-error" style="display: none;"></div>
                             </div>
 
                             <div class="col-md-6">
-                                <input type="text" name="numero_apogee" class="form-control" placeholder="Votre N° Apogée" value="{{ old('numero_apogee') }}" required="">
+                                <input type="text" name="numero_apogee" id="numero_apogee" class="form-control" placeholder="Votre N° Apogée" value="{{ old('numero_apogee') }}" required="">
+                                <div class="invalid-feedback" id="apogee-error" style="display: none;"></div>
                             </div>
                             
                             <div class="col-md-6">
-                                <input type="text" class="form-control" name="cin" placeholder="Votre CIN" value="{{ old('cin') }}" required="">
+                                <input type="text" class="form-control" name="cin" id="cin" placeholder="Votre CIN" value="{{ old('cin') }}" required="">
+                                <div class="invalid-feedback" id="cin-error" style="display: none;"></div>
                             </div>
 
                             <div class="col-md-12 text-center"> 
-                                <button type="submit">S'identifier et Continuer</button>
+                                <button type="submit" id="submit-btn" disabled style="opacity: 0.6; cursor: not-allowed;">Valider et Continuer</button>
                             </div>
                         </div>
                     </form>
+
+                    <script>
+                        (function() {
+                            const emailInput = document.getElementById('email');
+                            const apogeeInput = document.getElementById('numero_apogee');
+                            const cinInput = document.getElementById('cin');
+                            const submitBtn = document.getElementById('submit-btn');
+                            
+                            const emailError = document.getElementById('email-error');
+                            const apogeeError = document.getElementById('apogee-error');
+                            const cinError = document.getElementById('cin-error');
+                            
+                            function validateEmail(email) {
+                                if (!email || email.trim() === '') {
+                                    return { valid: false, message: 'L\'email est obligatoire.' };
+                                }
+                                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                if (!emailRegex.test(email)) {
+                                    return { valid: false, message: 'Format d\'email invalide.' };
+                                }
+                                if (!email.endsWith('@etu.uae.ac.ma')) {
+                                    return { valid: false, message: 'L\'email doit être une adresse institutionnelle (@etu.uae.ac.ma).' };
+                                }
+                                return { valid: true };
+                            }
+                            
+                            function validateApogee(apogee) {
+                                if (!apogee || apogee.trim() === '') {
+                                    return { valid: false, message: 'Le numéro Apogée est obligatoire.' };
+                                }
+                                return { valid: true };
+                            }
+                            
+                            function validateCin(cin) {
+                                if (!cin || cin.trim() === '') {
+                                    return { valid: false, message: 'Le CIN est obligatoire.' };
+                                }
+                                return { valid: true };
+                            }
+                            
+                            function updateFieldValidation(input, errorDiv, validator) {
+                                const value = input.value;
+                                const result = validator(value);
+                                
+                                if (result.valid) {
+                                    input.classList.remove('is-invalid');
+                                    input.classList.add('is-valid');
+                                    errorDiv.style.display = 'none';
+                                    return true;
+                                } else {
+                                    input.classList.remove('is-valid');
+                                    input.classList.add('is-invalid');
+                                    errorDiv.textContent = result.message;
+                                    errorDiv.style.display = 'block';
+                                    return false;
+                                }
+                            }
+                            
+                            function checkFormValidity() {
+                                const emailValid = updateFieldValidation(emailInput, emailError, validateEmail);
+                                const apogeeValid = updateFieldValidation(apogeeInput, apogeeError, validateApogee);
+                                const cinValid = updateFieldValidation(cinInput, cinError, validateCin);
+                                
+                                if (emailValid && apogeeValid && cinValid) {
+                                    submitBtn.disabled = false;
+                                    submitBtn.style.opacity = '1';
+                                    submitBtn.style.cursor = 'pointer';
+                                } else {
+                                    submitBtn.disabled = true;
+                                    submitBtn.style.opacity = '0.6';
+                                    submitBtn.style.cursor = 'not-allowed';
+                                }
+                            }
+                            
+                            emailInput.addEventListener('input', () => checkFormValidity());
+                            emailInput.addEventListener('blur', () => checkFormValidity());
+                            apogeeInput.addEventListener('input', () => checkFormValidity());
+                            apogeeInput.addEventListener('blur', () => checkFormValidity());
+                            cinInput.addEventListener('input', () => checkFormValidity());
+                            cinInput.addEventListener('blur', () => checkFormValidity());
+                            
+                            // Initial check on page load
+                            checkFormValidity();
+                        })();
+                    </script>
                 </div><!-- End Contact Form -->
             </div>
         </div>

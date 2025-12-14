@@ -23,7 +23,8 @@ class DemandeController extends Controller
             return redirect()->route('home')->withErrors('Votre session a expiré. Veuillez vous reconnecter.');
         }
 
-        if ($request->input('type_document') === 'reclamation') {
+        // Check if this is actually a reclamation (should be handled by ReclamationController)
+        if ($request->input('type_demande') === 'reclamation') {
             return redirect()->route('reclamation.formulaire');
         }
 
@@ -31,8 +32,8 @@ class DemandeController extends Controller
         $validator = Validator::make($request->all(), [
             'niveau_actuel' => 'required|string',
             'filiere' => 'required_if:niveau_actuel,ci1,ci2,ci3|string|nullable',
-            'type_document' => 'required|string',
-            'annee_universitaire' => 'required_if:type_document,releve_notes,reussite,non_redoublement|string|nullable',
+            'type_document' => 'required|string|in:scolarite,releve_notes,reussite,convention_stage',
+            'annee_universitaire' => 'required_if:type_document,releve_notes,reussite|string|nullable',
         ]);
 
         if ($validator->fails()) {
@@ -82,7 +83,7 @@ class DemandeController extends Controller
         }
 
         // Contrainte pour les autres attestations (après le 1er Juillet pour l'année en cours)
-        if (in_array($typeDocument, ['releve_notes', 'reussite', 'non_redoublement']) && $anneeUniversitaire == $currentAcademicYear) {
+        if (in_array($typeDocument, ['releve_notes', 'reussite']) && $anneeUniversitaire == $currentAcademicYear) {
             if ($currentDate->month < 7) { // Avant Juillet
                 return back()->withErrors(['date' => 'Ce type d\'attestation pour l\'année en cours n\'est disponible qu\'à partir du mois de Juillet.'])->withInput();
             }

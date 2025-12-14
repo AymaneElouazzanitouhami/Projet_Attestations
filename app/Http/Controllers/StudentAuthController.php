@@ -15,14 +15,23 @@ class StudentAuthController extends Controller
     {
         // 1. Définir les règles de validation
         $rules = [
-            'email' => ['required', 'email', 'ends_with:@etu.uae.ac.ma'],
-            'numero_apogee' => ['required', 'string'],
-            'cin' => ['required', 'string'],
+            'email' => ['required', 'email', 'ends_with:@etu.uae.ac.ma', 'max:255'],
+            'numero_apogee' => ['required', 'string', 'min:1', 'max:50'],
+            'cin' => ['required', 'string', 'min:1', 'max:20'],
         ];
 
         // 2. Définir les messages d'erreur personnalisés
         $messages = [
+            'email.required' => 'L\'adresse email est obligatoire.',
+            'email.email' => 'L\'adresse email doit être valide.',
             'email.ends_with' => 'L\'adresse email doit être une adresse institutionnelle (@etu.uae.ac.ma).',
+            'email.max' => 'L\'adresse email ne peut pas dépasser 255 caractères.',
+            'numero_apogee.required' => 'Le numéro Apogée est obligatoire.',
+            'numero_apogee.min' => 'Le numéro Apogée est invalide.',
+            'numero_apogee.max' => 'Le numéro Apogée ne peut pas dépasser 50 caractères.',
+            'cin.required' => 'Le CIN est obligatoire.',
+            'cin.min' => 'Le CIN est invalide.',
+            'cin.max' => 'Le CIN ne peut pas dépasser 20 caractères.',
             'required' => 'Le champ :attribute est obligatoire.'
         ];
 
