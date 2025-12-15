@@ -131,44 +131,6 @@
       <!-- [Header Right Menu] -->
       <div class="ms-auto">
         <ul class="list-unstyled">
-          <li class="dropdown pc-h-item header-user-profile">
-            <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button"
-              aria-haspopup="false" aria-expanded="false">
-              <img src="{{ asset('assets/admin/assets/images/user/avatar-2.jpg') }}" alt="user-image" class="user-avtar">
-              <span>
-                <!-- Affichage dynamique du nom de l'admin connecté -->
-                <span class="user-name">{{ Auth::user()->nom_complet ?? 'Administrateur' }}</span>
-                <span class="user-desc">Admin</span>
-              </span>
-            </a>
-            <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
-              <div class="dropdown-header">
-                <div class="d-flex mb-1">
-                  <div class="flex-shrink-0">
-                    <img src="{{ asset('assets/admin/assets/images/user/avatar-2.jpg') }}" alt="user-image" class="user-avtar wid-35">
-                  </div>
-                  <div class="flex-grow-1 ms-3">
-                    <h6 class="mb-1">{{ Auth::user()->nom_complet ?? 'Administrateur' }}</h6>
-                    <span>ATTESTA Admin</span>
-                  </div>
-                  <a href="#" class="pc-head-link bg-transparent" onclick="event.preventDefault(); document.getElementById('logout-form-top').submit();">
-                    <i class="ti ti-power text-danger"></i>
-                  </a>
-                </div>
-              </div>
-              <hr class="border-secondary border-opacity-50">
-              <div class="d-grid">
-                <a href="#" class="btn btn-primary" onclick="event.preventDefault(); document.getElementById('logout-form-top').submit();">
-                  <svg class="pc-icon me-2">
-                    <use xlink:href="#custom-logout-1-outline"></use>
-                  </svg>Se déconnecter
-                </a>
-                <form id="logout-form-top" action="{{ route('admin.logout') }}" method="POST" class="d-none" style="display: none;">
-                    @csrf
-                </form>
-              </div>
-            </div>
-          </li>
         </ul>
       </div>
     </div>

@@ -29,16 +29,23 @@ class GestionDemandeController extends Controller
             $query->where('statut', $statut);
         }
 
-        // Recherche par Code Apogée
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->whereHas('etudiant', function($q) use ($search) {
-                $q->where('numero_apogee', 'like', "%{$search}%");
-            });
+        // Filtre par type de document
+        $typeDocument = $request->input('type_document');
+        if (!empty($typeDocument) && $typeDocument !== 'all') {
+            $query->where('type_document', $typeDocument);
         }
 
-        // Paginate and preserve query string (including the statut we used)
-        $demandes = $query->paginate(10)->appends(array_merge($request->except('page'), ['statut' => $statut]));
+        // Recherche par Numéro de demande (id_demande)
+        if ($request->has('search') && !empty($request->search)) {
+            $raw = trim((string) $request->search);
+            $digits = preg_replace('/\D+/', '', $raw);
+            if ($digits !== '') {
+                $query->where('id_demande', (int) $digits);
+            }
+        }
+
+        // Paginate and preserve query string
+        $demandes = $query->paginate(10)->appends($request->except('page'));
 
         return view('admin.demandes', compact('demandes'));
     }

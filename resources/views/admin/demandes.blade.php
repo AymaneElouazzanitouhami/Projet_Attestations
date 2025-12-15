@@ -32,22 +32,49 @@
       <div class="card-body">
         
         <!-- SECTION FILTRES -->
-        <form action="{{ route('admin.demandes') }}" method="GET" class="row mb-4 align-items-center">
+        <div class="row mb-4 align-items-center">
             <div class="col-md-6 mb-2">
+                @php
+                    $keepParams = [];
+                    if (request('search')) {
+                        $keepParams = ['search' => request('search')];
+                    } elseif (request('type_document') && request('type_document') !== 'all') {
+                        $keepParams = ['type_document' => request('type_document')];
+                    }
+                @endphp
                 <div class="btn-group" role="group">
-                    <a href="{{ route('admin.demandes', ['statut' => 'en_attente']) }}" class="btn {{ request('statut') == 'en_attente' || !request('statut') ? 'btn-primary' : 'btn-outline-primary' }}">En attente</a>
-                    <a href="{{ route('admin.demandes', ['statut' => 'validee']) }}" class="btn {{ request('statut') == 'validee' ? 'btn-primary' : 'btn-outline-primary' }}">Validées</a>
-                    <a href="{{ route('admin.demandes', ['statut' => 'refusee']) }}" class="btn {{ request('statut') == 'refusee' ? 'btn-primary' : 'btn-outline-primary' }}">Refusées</a>
-                    <a href="{{ route('admin.demandes', ['statut' => 'all']) }}" class="btn {{ request('statut') == 'all' ? 'btn-primary' : 'btn-outline-primary' }}">Toutes</a>
+                    <a href="{{ route('admin.demandes', array_merge(['statut' => 'en_attente'], $keepParams)) }}" class="btn {{ request('statut') == 'en_attente' || !request('statut') ? 'btn-primary' : 'btn-outline-primary' }}">En attente</a>
+                    <a href="{{ route('admin.demandes', array_merge(['statut' => 'validee'], $keepParams)) }}" class="btn {{ request('statut') == 'validee' ? 'btn-primary' : 'btn-outline-primary' }}">Validées</a>
+                    <a href="{{ route('admin.demandes', array_merge(['statut' => 'refusee'], $keepParams)) }}" class="btn {{ request('statut') == 'refusee' ? 'btn-primary' : 'btn-outline-primary' }}">Refusées</a>
+                    <a href="{{ route('admin.demandes', array_merge(['statut' => 'all'], $keepParams)) }}" class="btn {{ request('statut') == 'all' ? 'btn-primary' : 'btn-outline-primary' }}">Toutes</a>
                 </div>
             </div>
             <div class="col-md-6 mb-2">
-                <div class="input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Rechercher par Code Apogée..." value="{{ request('search') }}">
-                    <button class="btn btn-primary" type="submit"><i class="ti ti-search"></i></button>
+                <div class="row g-2">
+                    <div class="col-md-5">
+                        <form action="{{ route('admin.demandes') }}" method="GET">
+                            <input type="hidden" name="statut" value="{{ request('statut', 'en_attente') }}">
+                            <select name="type_document" class="form-select" onchange="this.form.submit()">
+                                <option value="all" {{ request('type_document', 'all') == 'all' ? 'selected' : '' }}>Tous les types</option>
+                                <option value="scolarite" {{ request('type_document') == 'scolarite' ? 'selected' : '' }}>Attestation de Scolarité</option>
+                                <option value="releve_notes" {{ request('type_document') == 'releve_notes' ? 'selected' : '' }}>Relevé de Notes</option>
+                                <option value="reussite" {{ request('type_document') == 'reussite' ? 'selected' : '' }}>Attestation de Réussite</option>
+                                <option value="convention_stage" {{ request('type_document') == 'convention_stage' ? 'selected' : '' }}>Convention de Stage</option>
+                            </select>
+                        </form>
+                    </div>
+                    <div class="col-md-7">
+                        <form action="{{ route('admin.demandes') }}" method="GET">
+                            <input type="hidden" name="statut" value="{{ request('statut', 'en_attente') }}">
+                            <div class="input-group">
+                                <input type="text" name="search" class="form-control" placeholder="Rechercher par Numéro de demande..." value="{{ request('search') }}">
+                                <button class="btn btn-primary" type="submit"><i class="ti ti-search"></i></button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </form>
+        </div>
 
         <!-- TABLEAU DES DONNÉES -->
         <div class="table-responsive">

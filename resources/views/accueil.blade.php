@@ -122,6 +122,7 @@
                         <div>
                             <h3>Accéder directement au Espace de Demande attestation ou Déposer une réclamation</h3>
                             <p>Pas d'identification préalable : cliquez ci-dessous pour saisir votre CIN, Apogée et Email puis choisir Réclamation ou Demande d'attestation.</p>
+                            <a class="btn btn-outline-primary mt-3 me-2" href="{{ route('demande.suivi.form') }}">Suivre l'etat de votre demande</a>
                             <a class="btn btn-primary mt-3" href="{{ route('demande_reclamation.formulaire') }}">Faire DEMANDE ou RECLAMATION</a>
                         </div>
                     </div>

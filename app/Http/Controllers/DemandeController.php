@@ -13,6 +13,56 @@ use Illuminate\Support\Facades\Log;
 
 class DemandeController extends Controller
 {
+    public function suiviForm()
+    {
+        return view('suivi_demande');
+    }
+
+    public function suiviCheck(Request $request)
+    {
+        $validated = $request->validate([
+            'cin' => 'required|string|max:20',
+            'numero_apogee' => 'required|string|max:50',
+            'email' => 'required|email|max:255',
+            'id_demande' => 'required|integer|min:1',
+        ]);
+
+        $etudiant = Etudiant::where('cin', trim($validated['cin']))
+            ->where('numero_apogee', trim($validated['numero_apogee']))
+            ->where('email', trim($validated['email']))
+            ->first();
+
+        if (!$etudiant) {
+            return back()->withErrors([
+                'identification' => 'Aucun étudiant ne correspond aux informations saisies.',
+            ])->withInput();
+        }
+
+        $demande = Demande::with('etudiant')
+            ->where('id_demande', $validated['id_demande'])
+            ->where('id_etudiant', $etudiant->id_etudiant)
+            ->first();
+
+        if (!$demande) {
+            return back()->withErrors([
+                'id_demande' => 'Aucune demande trouvée avec ce numéro pour cet étudiant.',
+            ])->withInput();
+        }
+
+        $statusLabels = [
+            'en_attente' => 'En attente',
+            'validee' => 'Validée',
+            'refusee' => 'Refusée',
+        ];
+
+        $statusLabel = $statusLabels[$demande->statut] ?? $demande->statut;
+
+        return view('suivi_demande', [
+            'demande' => $demande,
+            'statusLabel' => $statusLabel,
+        ]);
+    }
+
     /**
      * Valide et enregistre une nouvelle demande d'attestation.
      */
