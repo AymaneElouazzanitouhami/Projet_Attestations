@@ -18,20 +18,12 @@ class DemandeController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. Récupérer l'étudiant authentifié depuis la session
-        $etudiantSession = session('etudiant');
-        if (!$etudiantSession) {
-            return redirect()->route('home')->withErrors('Votre session a expiré. Veuillez vous reconnecter.');
-        }
-
-        // Check if this is actually a reclamation (should be handled by ReclamationController)
-        if ($request->input('type_demande') === 'reclamation') {
-            return redirect()->route('reclamation.formulaire');
-        }
-
-        // 2. Valider les données de base du formulaire
+        // 1. Validation des données envoyées (identité + demande)
         $validator = Validator::make($request->all(), [
-            'niveau_actuel' => 'required|string',
+            'cin' => 'required|string|max:20',
+            'numero_apogee' => 'required|string|max:50',
+            'email' => 'required|email|max:255',
+            'niveau_actuel' => 'required|string|in:2ap1,2ap2,ci1,ci2,ci3',
             'filiere' => 'required_if:niveau_actuel,ci1,ci2,ci3|string|nullable',
             'type_document' => 'required|string|in:scolarite,releve_notes,reussite,convention_stage',
             'annee_universitaire' => 'required_if:type_document,releve_notes,reussite|string|nullable',
@@ -50,7 +42,17 @@ class DemandeController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        // 3. CORRECTION : Traduire le niveau du formulaire en format numérique pour la BDD
+        // 2. Récupérer l'étudiant via les trois champs obligatoires
+        $etudiantFromDB = Etudiant::where('cin', trim($request->input('cin')))
+            ->where('numero_apogee', trim($request->input('numero_apogee')))
+            ->where('email', trim($request->input('email')))
+            ->first();
+
+        if (!$etudiantFromDB) {
+            return back()->withErrors(['identification' => 'Aucun étudiant ne correspond aux informations saisies.'])->withInput();
+        }
+
+        // 3. Traduire le niveau du formulaire en format numérique pour la BDD
         $niveauActuelForm = $request->input('niveau_actuel');
         $niveauActuelInt = 0; // Valeur par défaut
         switch ($niveauActuelForm) {
@@ -62,9 +64,6 @@ class DemandeController extends Controller
         }
 
        // 4. VÉRIFICATION DE COHÉRENCE
-        $etudiantFromDB = Etudiant::find($etudiantSession->id_etudiant);
-        
-        // On s'assure que si le formulaire n'envoie rien, on compare avec null
         $filiereForm = $request->input('filiere') ?: null; 
 
         if ($niveauActuelInt != $etudiantFromDB->niveau_actuel || $filiereForm != $etudiantFromDB->filiere_actuelle) {
@@ -74,16 +73,29 @@ class DemandeController extends Controller
             return back()->withErrors(['coherence' => 'Les informations de niveau ou de filière que vous avez sélectionnées ne correspondent pas à votre dossier. Veuillez vérifier.'])->withInput();
         }
 
-        // 5. VÉRIFICATION DES CONTRAINTES MÉTIER (le reste de la logique est inchangé)
+        // 5. VÉRIFICATION DES CONTRAINTES MÉTIER
         $typeDocument = $request->input('type_document');
         $anneeUniversitaire = $request->input('annee_universitaire');
         $currentDate = Carbon::now();
         $currentAcademicYear = $currentDate->month >= 9 ? $currentDate->year . '-' . ($currentDate->year + 1) : ($currentDate->year - 1) . '-' . $currentDate->year;
 
+        // Années autorisées : inférieur ou égal à l'année actuelle de l'étudiant
+        if (in_array($typeDocument, ['releve_notes', 'reussite']) && $anneeUniversitaire) {
+            $academicYearStart = $currentDate->month >= 9 ? $currentDate->year : $currentDate->year - 1;
+            $allowedYears = [];
+            for ($level = $etudiantFromDB->niveau_actuel; $level >= 1; $level--) {
+                $start = $academicYearStart - ($etudiantFromDB->niveau_actuel - $level);
+                $allowedYears[] = $start . '-' . ($start + 1);
+            }
+            if (!in_array($anneeUniversitaire, $allowedYears, true)) {
+                return back()->withErrors(['annee_universitaire' => 'L\'année choisie n\'est pas compatible avec votre niveau.'])->withInput();
+            }
+        }
+
         // Contrainte pour l'attestation de scolarité (une par année académique)
         if ($typeDocument == 'scolarite') {
             $startAcademicYearDate = Carbon::create($currentDate->month >= 9 ? $currentDate->year : $currentDate->year - 1, 9, 1);
-            $demandeExistante = Demande::where('id_etudiant', $etudiantSession->id_etudiant)
+            $demandeExistante = Demande::where('id_etudiant', $etudiantFromDB->id_etudiant)
                 ->where('type_document', 'scolarite')
                 ->where('date_demande', '>=', $startAcademicYearDate)
                 ->exists();
@@ -101,7 +113,7 @@ class DemandeController extends Controller
         
         // 6. ENREGISTREMENT DE LA DEMANDE
         $demande = new Demande();
-        $demande->id_etudiant = $etudiantSession->id_etudiant;
+        $demande->id_etudiant = $etudiantFromDB->id_etudiant;
         $demande->type_document = $typeDocument;
         $demande->annee_universitaire = $anneeUniversitaire;
         $demande->date_demande = now();
@@ -111,7 +123,7 @@ class DemandeController extends Controller
         if ($typeDocument === 'convention_stage') {
             ConventionStage::create([
                 'id_demande' => $demande->id_demande,
-                'id_etudiant' => $etudiantSession->id_etudiant,
+                'id_etudiant' => $etudiantFromDB->id_etudiant,
                 'nom_entreprise' => $request->input('nom_entreprise'),
                 'adresse_entreprise' => $request->input('adresse_entreprise'),
                 'email_entreprise' => $request->input('email_entreprise'),
@@ -125,7 +137,7 @@ class DemandeController extends Controller
         }
 
         try {
-            $recipient = $etudiantFromDB->email ?? ($etudiantSession->email ?? null);
+            $recipient = $etudiantFromDB->email;
             if ($recipient) {
                 $idDemande = $demande->id_demande;
                 Mail::raw(

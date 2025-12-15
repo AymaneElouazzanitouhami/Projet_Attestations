@@ -68,6 +68,33 @@ class StudentAuthController extends Controller
     }
 
     /**
+     * Retourne les infos d'un étudiant (lookup sans session) pour pré-remplir le formulaire unifié.
+     */
+    public function lookup(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'email', 'max:255'],
+            'numero_apogee' => ['required', 'string', 'max:50'],
+            'cin' => ['required', 'string', 'max:20'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Paramètres invalides'], 422);
+        }
+
+        $etudiant = Etudiant::where('email', trim($request->input('email')))
+            ->where('numero_apogee', trim($request->input('numero_apogee')))
+            ->where('cin', trim($request->input('cin')))
+            ->first();
+
+        if (!$etudiant) {
+            return response()->json(['message' => 'Étudiant introuvable'], 404);
+        }
+
+        return response()->json($etudiant);
+    }
+
+    /**
      * Déconnecte l'étudiant.
      */
     public function logout(Request $request)

@@ -14,14 +14,11 @@ class ReclamationController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. Récupérer l'étudiant authentifié depuis la session
-        $etudiant = session('etudiant');
-        if (!$etudiant) {
-            return redirect()->route('home')->withErrors('Votre session a expiré. Veuillez vous reconnecter.');
-        }
-        
-        // 2. Valider les données de base du formulaire
+        // 1. Valider les données envoyées
         $validator = Validator::make($request->all(), [
+            'cin' => 'required|string|max:20',
+            'numero_apogee' => 'required|string|max:50',
+            'email' => 'required|email|max:255',
             'type_document_concerne' => 'required|string|in:scolarite,releve_notes,reussite,convention_stage',
             'numero_demande_concerne' => 'required|integer',
             'sujet' => 'required|string|max:255',
@@ -30,6 +27,16 @@ class ReclamationController extends Controller
         
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
+        }
+
+        // 2. Récupérer l'étudiant via les trois champs obligatoires
+        $etudiant = \App\Models\Etudiant::where('cin', trim($request->input('cin')))
+            ->where('numero_apogee', trim($request->input('numero_apogee')))
+            ->where('email', trim($request->input('email')))
+            ->first();
+
+        if (!$etudiant) {
+            return back()->withErrors(['identification' => 'Aucun étudiant ne correspond aux informations saisies.'])->withInput();
         }
         
         $typeDocumentConcerne = $request->input('type_document_concerne');

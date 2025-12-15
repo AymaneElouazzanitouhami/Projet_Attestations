@@ -1,9 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\StudentAuthController;
 use App\Http\Controllers\DemandeController;
 use App\Http\Controllers\ReclamationController;
+use App\Http\Controllers\StudentAuthController;
 use App\Http\Controllers\AdminAuthController; // On importe le contrôleur depuis le sous-dossier Admin
 
 use App\Http\Controllers\Admin\DashboardController;
@@ -23,9 +23,11 @@ Route::get('/', function () {
     return view('accueil');
 })->name('home');
 
-// Authentification de l'étudiant
+// Authentification de l'étudiant (héritage de l'ancienne logique, conservée pour compatibilité)
 Route::post('/login', [StudentAuthController::class, 'login'])->name('student.login');
 Route::get('/logout', [StudentAuthController::class, 'logout'])->name('student.logout');
+// Endpoint de lookup pour pré-remplir les infos étudiant depuis le formulaire unifié
+Route::get('/api/etudiants/lookup', [StudentAuthController::class, 'lookup'])->name('etudiants.lookup');
 
 
 // --- ROUTES POUR L'ADMINISTRATION ---
@@ -53,36 +55,28 @@ Route::prefix('admin')->group(function () {
 });
 
 
-// --- ROUTES PROTÉGÉES (Espace Étudiant) ---
-// Note : la logique de protection est directement dans chaque route pour le moment.
+// --- ESPACE ÉTUDIANT UNIFIÉ (sans session préalable) ---
+Route::get('/demande-reclamation', function () {
+    return view('demande_reclamation');
+})->name('demande_reclamation.formulaire');
 
-// Affiche la page de choix après une connexion réussie
-Route::get('/espace-etudiant/choix', function() {
-    if (!session('etudiant')) {
-        return redirect()->route('home')->withErrors(['identification' => 'Veuillez vous connecter pour accéder à cet espace.']);
-    }
-    return view('choix');
-})->name('choix.action');
-
-// Routes pour la Demande d'Attestation
+// Compatibilité : anciennes routes redirigent vers la nouvelle page
 Route::get('/nouvelle-demande', function () {
-    if (!session('etudiant')) { return redirect()->route('home'); }
-    return view('demande', ['etudiant' => session('etudiant')]);
+    return redirect()->route('demande_reclamation.formulaire');
 })->name('demande.formulaire');
+Route::get('/reclamation', function () {
+    return redirect()->route('demande_reclamation.formulaire', ['preSelectReclamation' => true]);
+})->name('reclamation.formulaire');
+
+// Soumissions
 Route::post('/nouvelle-demande', [DemandeController::class, 'store'])->name('demande.store');
+Route::post('/reclamation', [ReclamationController::class, 'store'])->name('reclamation.store');
+
+// Pages de succès (accessibles sans session)
 Route::get('/demande/succes', function() {
-    if (!session('etudiant')) { return redirect()->route('home'); }
     return view('demande_succes');
 })->name('demande.succes');
-
-// Routes pour la Réclamation (redirige vers le formulaire unifié)
-Route::get('/reclamation', function () {
-    if (!session('etudiant')) { return redirect()->route('home'); }
-    return view('demande', ['etudiant' => session('etudiant'), 'preSelectReclamation' => true]);
-})->name('reclamation.formulaire');
-Route::post('/reclamation', [ReclamationController::class, 'store'])->name('reclamation.store');
 Route::get('/reclamation/succes', function() {
-    if (!session('etudiant')) { return redirect()->route('home'); }
     return view('reclamation_succes');
 })->name('reclamation.succes');
 
