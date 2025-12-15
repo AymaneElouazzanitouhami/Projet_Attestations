@@ -206,7 +206,7 @@
             </div>
 
             <div class="col-lg-5 order-1 order-lg-2 hero-img" data-aos="fade-left" data-aos-delay="200">
-                <img src="{{ asset('assets/img/hero-img.png') }}" class="img-fluid animated" alt="Illustration d'étudiants">
+                <img src="{{ asset('assets/img/steps/steps-1.webp') }}" class="img-fluid animated" alt="Illustration d'étudiants">
             </div>
 
         </div>

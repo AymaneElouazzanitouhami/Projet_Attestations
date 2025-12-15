@@ -95,24 +95,15 @@
         <div class="row gy-4">
             <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
                 <div class="team-member d-flex align-items-start">
-                    <div class="pic"><img src="{{ asset('assets/img/person/person-f-4.webp') }}" class="img-fluid" alt=""></div>
+                    <div class="pic"><img src="https://ensate.uae.ac.ma/wp-content/themes/ensat-theme/src/director.jpg" class="img-fluid" alt=""></div>
                     <div class="member-info">
-                        <h4>Service Scolarité</h4>
-                        <span>Traitement des attestations</span>
-                        <p>Responsable de la vérification et de la validation de vos demandes.</p>
+                        <h4>Mot du Directeur</h4>
+                        <span>Pr. Kamal Reklaoui Directeur de l'École Nationale des Sciences Appliquées de Tétouan</span>
+                        <p>L'enseignement supérieur et la recherche sont les leviers de la puissance et du rayonnement d'un pays, ils demeurent cruciaux pour la construction de l'avenir.</p>
                     </div>
                 </div>
             </div><!-- End Team Member -->
-             <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
-                <div class="team-member d-flex align-items-start">
-                    <div class="pic"><img src="{{ asset('assets/img/person/person-f-5.webp') }}" class="img-fluid" alt=""></div>
-                    <div class="member-info">
-                        <h4>Support Technique</h4>
-                        <span>Administration de la plateforme</span>
-                        <p>Assure le bon fonctionnement technique du service ATTESTA.</p>
-                    </div>
-                </div>
-            </div><!-- End Team Member -->
+             
         </div>
     </div>
 </section><!-- /Team Section -->
