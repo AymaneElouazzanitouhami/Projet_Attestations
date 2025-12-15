@@ -183,6 +183,48 @@
                                     </div>
                                 </template>
 
+                                <!-- Champs spécifiques à la Convention de Stage -->
+                                <template x-if="!isReclamation && documentType === 'convention_stage'">
+                                    <hr class="my-4">
+                                    <div class="col-12"><h5 class="form-subtitle">Informations sur le Stage</h5></div>
+                                    <div class="col-md-6">
+                                        <label for="nom_entreprise">Nom de l'Entreprise</label>
+                                        <input type="text" class="form-control" name="nom_entreprise" value="{{ old('nom_entreprise') }}" :required="!isReclamation && documentType === 'convention_stage'">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="email_entreprise">Email de l'Entreprise</label>
+                                        <input type="email" class="form-control" name="email_entreprise" value="{{ old('email_entreprise') }}" :required="!isReclamation && documentType === 'convention_stage'">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="adresse_entreprise">Adresse de l'Entreprise</label>
+                                        <textarea class="form-control" name="adresse_entreprise" rows="3" :required="!isReclamation && documentType === 'convention_stage'">{{ old('adresse_entreprise') }}</textarea>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="nom_encadrant_entreprise">Nom de l'Encadrant en Entreprise</label>
+                                        <input type="text" class="form-control" name="nom_encadrant_entreprise" value="{{ old('nom_encadrant_entreprise') }}" :required="!isReclamation && documentType === 'convention_stage'">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="nom_encadrant_ecole">Nom de l'Encadrant à l'École</label>
+                                        <input type="text" class="form-control" name="nom_encadrant_ecole" value="{{ old('nom_encadrant_ecole') }}" :required="!isReclamation && documentType === 'convention_stage'">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="sujet_stage">Sujet du Stage</label>
+                                        <textarea class="form-control" name="sujet_stage" rows="3" :required="!isReclamation && documentType === 'convention_stage'">{{ old('sujet_stage') }}</textarea>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="duree_stage">Durée du Stage</label>
+                                        <input type="text" class="form-control" name="duree_stage" value="{{ old('duree_stage') }}" placeholder="Ex: 3 mois" :required="!isReclamation && documentType === 'convention_stage'">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="date_debut">Date de Début</label>
+                                        <input type="date" class="form-control" name="date_debut" value="{{ old('date_debut') }}" :required="!isReclamation && documentType === 'convention_stage'">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="date_fin">Date de Fin</label>
+                                        <input type="date" class="form-control" name="date_fin" value="{{ old('date_fin') }}" :required="!isReclamation && documentType === 'convention_stage'">
+                                    </div>
+                                </template>
+
                                 <div x-show="isReclamation" style="display: none;">
                                     <hr class="my-4">
 

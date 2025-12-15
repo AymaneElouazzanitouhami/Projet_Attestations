@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Demande;
 use App\Models\Etudiant;
+use App\Models\ConventionStage;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
@@ -34,6 +35,15 @@ class DemandeController extends Controller
             'filiere' => 'required_if:niveau_actuel,ci1,ci2,ci3|string|nullable',
             'type_document' => 'required|string|in:scolarite,releve_notes,reussite,convention_stage',
             'annee_universitaire' => 'required_if:type_document,releve_notes,reussite|string|nullable',
+            'nom_entreprise' => 'required_if:type_document,convention_stage|string|max:255',
+            'adresse_entreprise' => 'required_if:type_document,convention_stage|string',
+            'email_entreprise' => 'required_if:type_document,convention_stage|email|max:255',
+            'nom_encadrant_entreprise' => 'required_if:type_document,convention_stage|string|max:100',
+            'nom_encadrant_ecole' => 'required_if:type_document,convention_stage|string|max:100',
+            'sujet_stage' => 'required_if:type_document,convention_stage|string',
+            'duree_stage' => 'required_if:type_document,convention_stage|string|max:100',
+            'date_debut' => 'required_if:type_document,convention_stage|date',
+            'date_fin' => 'required_if:type_document,convention_stage|date|after:date_debut',
         ]);
 
         if ($validator->fails()) {
@@ -96,6 +106,23 @@ class DemandeController extends Controller
         $demande->annee_universitaire = $anneeUniversitaire;
         $demande->date_demande = now();
         $demande->save();
+
+        // Si c'est une convention de stage, enregistrer les détails
+        if ($typeDocument === 'convention_stage') {
+            ConventionStage::create([
+                'id_demande' => $demande->id_demande,
+                'id_etudiant' => $etudiantSession->id_etudiant,
+                'nom_entreprise' => $request->input('nom_entreprise'),
+                'adresse_entreprise' => $request->input('adresse_entreprise'),
+                'email_entreprise' => $request->input('email_entreprise'),
+                'nom_encadrant_entreprise' => $request->input('nom_encadrant_entreprise'),
+                'nom_encadrant_ecole' => $request->input('nom_encadrant_ecole'),
+                'sujet_stage' => $request->input('sujet_stage'),
+                'duree_stage' => $request->input('duree_stage'),
+                'date_debut' => $request->input('date_debut'),
+                'date_fin' => $request->input('date_fin'),
+            ]);
+        }
 
         try {
             $recipient = $etudiantFromDB->email ?? ($etudiantSession->email ?? null);

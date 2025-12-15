@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('demandes', function (Blueprint $table) {
             $table->id('id_demande');
             $table->foreignId('id_etudiant')->constrained('etudiants', 'id_etudiant');
-            $table->enum('type_document', ['scolarite', 'releve_notes', 'reussite', 'non_redoublement', 'convention_stage']);
+            $table->enum('type_document', ['scolarite', 'releve_notes', 'reussite', 'convention_stage']);
             $table->enum('statut', ['en_attente', 'validee', 'refusee'])->default('en_attente');
             $table->dateTime('date_demande')->useCurrent();
             $table->string('annee_universitaire', 50)->nullable();

@@ -98,6 +98,11 @@
                                             Attestation de Réussite
                                         </a>
                                         @break
+                                    @case('convention_stage')
+                                        <a href="{{ route('admin.demandes.document', $demande->id_demande) }}" target="_blank" class="text-decoration-underline">
+                                            Convention de Stage
+                                        </a>
+                                        @break
                                     @case('non_redoublement')
                                         <a href="{{ route('admin.demandes.document', $demande->id_demande) }}" target="_blank" class="text-decoration-underline">
                                             Non-Redoublement

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Demande;
 use App\Models\HistoriqueAction;
+use App\Models\ConventionStage;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;  
 use Illuminate\Support\Facades\Mail;
@@ -49,23 +50,30 @@ class GestionDemandeController extends Controller
         $etudiant = $demande->etudiant;
 
         // Vérifier que le type de document est supporté
-        if (!in_array($demande->type_document, ['scolarite', 'non_redoublement', 'reussite', 'releve_notes'])) {
+        if (!in_array($demande->type_document, ['scolarite', 'non_redoublement', 'reussite', 'releve_notes', 'convention_stage'])) {
             abort(404, 'Ce type de document n\'est pas disponible en PDF.');
         }
 
-        // Tous les types utilisent la même vue
-        $pdf = Pdf::loadView('pdf.attestation_template', compact('demande', 'etudiant'));
+        if ($demande->type_document === 'convention_stage') {
+            $convention = ConventionStage::where('id_demande', $id)->firstOrFail();
+            $pdf = Pdf::loadView('pdf.convention_stage_template', compact('demande', 'etudiant', 'convention'));
+            $fileName = 'convention_stage_' . $demande->id_demande . '.pdf';
+            return $pdf->stream($fileName);
+        } else {
+            // Tous les types utilisent la même vue
+            $pdf = Pdf::loadView('pdf.attestation_template', compact('demande', 'etudiant'));
 
-        // Nom du fichier selon le type
-        $fileNames = [
-            'scolarite' => 'attestation_scolarite_',
-            'non_redoublement' => 'attestation_non_redoublement_',
-            'reussite' => 'attestation_reussite_',
-            'releve_notes' => 'releve_notes_'
-        ];
+            // Nom du fichier selon le type
+            $fileNames = [
+                'scolarite' => 'attestation_scolarite_',
+                'non_redoublement' => 'attestation_non_redoublement_',
+                'reussite' => 'attestation_reussite_',
+                'releve_notes' => 'releve_notes_'
+            ];
 
-        $fileName = $fileNames[$demande->type_document] ?? 'attestation_';
-        return $pdf->stream($fileName . $demande->id_demande . '.pdf');
+            $fileName = $fileNames[$demande->type_document] ?? 'attestation_';
+            return $pdf->stream($fileName . $demande->id_demande . '.pdf');
+        }
     }
 
     // Action : VALIDER une demande
@@ -110,20 +118,30 @@ class GestionDemandeController extends Controller
         $pdfContent = null;
         $fileName = null;
 
-        if (in_array($demande->type_document, ['scolarite', 'non_redoublement', 'reussite', 'releve_notes'])) {
-            // Tous les types utilisent la même vue
-            $pdf = Pdf::loadView('pdf.attestation_template', compact('demande', 'etudiant'));
-            $pdfContent = $pdf->output();
-            
-            // Noms de fichier selon le type
-            $fileNames = [
-                'scolarite' => 'attestation_scolarite.pdf',
-                'non_redoublement' => 'attestation_non_redoublement.pdf',
-                'reussite' => 'attestation_reussite.pdf',
-                'releve_notes' => 'releve_notes.pdf'
-            ];
-            
-            $fileName = $fileNames[$demande->type_document] ?? 'attestation.pdf';
+        if (in_array($demande->type_document, ['scolarite', 'non_redoublement', 'reussite', 'releve_notes', 'convention_stage'])) {
+            if ($demande->type_document === 'convention_stage') {
+                $convention = ConventionStage::where('id_demande', $demande->id_demande)->first();
+                if ($convention) {
+                    $convention->update(['statut' => 'approuvee']);
+                }
+                $pdf = Pdf::loadView('pdf.convention_stage_template', compact('demande', 'etudiant', 'convention'));
+                $pdfContent = $pdf->output();
+                $fileName = 'convention_stage_' . $demande->id_demande . '.pdf';
+            } else {
+                // Tous les types utilisent la même vue
+                $pdf = Pdf::loadView('pdf.attestation_template', compact('demande', 'etudiant'));
+                $pdfContent = $pdf->output();
+                
+                // Noms de fichier selon le type
+                $fileNames = [
+                    'scolarite' => 'attestation_scolarite.pdf',
+                    'non_redoublement' => 'attestation_non_redoublement.pdf',
+                    'reussite' => 'attestation_reussite.pdf',
+                    'releve_notes' => 'releve_notes.pdf'
+                ];
+                
+                $fileName = $fileNames[$demande->type_document] ?? 'attestation.pdf';
+            }
             
             // Sauvegarder aussi le PDF dans le stockage pour archivage
             $filePath = 'attestations/' . $demande->id_demande . '_' . $fileName;
@@ -163,6 +181,13 @@ class GestionDemandeController extends Controller
             'date_traitement' => now(),
             'motif_refus' => $motif
         ]);
+
+        if ($demande->type_document === 'convention_stage') {
+            $convention = ConventionStage::where('id_demande', $demande->id_demande)->first();
+            if ($convention) {
+                $convention->update(['statut' => 'refusee']);
+            }
+        }
 
         Mail::to($demande->etudiant->email)->send(new DemandeRefuseeMail($demande, $motif));
 
