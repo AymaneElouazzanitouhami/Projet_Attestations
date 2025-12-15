@@ -10,46 +10,35 @@
   <!-- [ Main Content ] start -->
   <div class="row">
     
-    <!-- Carte 1 : Total Demandes -->
-    <div class="col-md-6 col-xl-3">
+    <!-- Carte 1 : Demandes Acceptées -->
+    <div class="col-md-6 col-xl-4">
       <div class="card">
         <div class="card-body">
-          <h6 class="mb-2 f-w-400 text-muted">Total Demandes</h6>
-          <h4 class="mb-3">{{ $stats['total_demandes'] ?? 0 }} <span class="badge bg-light-primary border border-primary"><i class="ti ti-file-text"></i> Global</span></h4>
-          <p class="mb-0 text-muted text-sm">Toutes attestations confondues</p>
+          <h6 class="mb-2 f-w-400 text-muted">Demandes Acceptées</h6>
+          <h4 class="mb-3">{{ $stats['demandes_validees'] ?? 0 }} <span class="badge bg-light-success border border-success"><i class="ti ti-check"></i> Validées</span></h4>
+          <p class="mb-0 text-muted text-sm">Demandes traitées et validées</p>
         </div>
       </div>
     </div>
 
-    <!-- Carte 2 : Étudiants -->
-    <div class="col-md-6 col-xl-3">
+    <!-- Carte 2 : Demandes En Attente -->
+    <div class="col-md-6 col-xl-4">
       <div class="card">
         <div class="card-body">
-          <h6 class="mb-2 f-w-400 text-muted">Étudiants Inscrits</h6>
-          <h4 class="mb-3">{{ $stats['total_etudiants'] ?? 0 }} <span class="badge bg-light-success border border-success"><i class="ti ti-users"></i> Actifs</span></h4>
-          <p class="mb-0 text-muted text-sm">Base de données étudiants</p>
+          <h6 class="mb-2 f-w-400 text-muted">Demandes En Attente</h6>
+          <h4 class="mb-3">{{ $stats['demandes_en_attente'] ?? 0 }} <span class="badge bg-light-warning border border-warning"><i class="ti ti-clock"></i> À traiter</span></h4>
+          <p class="mb-0 text-muted text-sm">Demandes en cours de traitement</p>
         </div>
       </div>
     </div>
 
-    <!-- Carte 3 : En Attente -->
-    <div class="col-md-6 col-xl-3">
+    <!-- Carte 3 : Demandes Refusées -->
+    <div class="col-md-6 col-xl-4">
       <div class="card">
         <div class="card-body">
-          <h6 class="mb-2 f-w-400 text-muted">À Traiter</h6>
-          <h4 class="mb-3">{{ $stats['en_attente'] ?? 0 }} <span class="badge bg-light-warning border border-warning"><i class="ti ti-clock"></i> Urgent</span></h4>
-          <p class="mb-0 text-muted text-sm">Demandes en attente</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Carte 4 : Réclamations -->
-    <div class="col-md-6 col-xl-3">
-      <div class="card">
-        <div class="card-body">
-          <h6 class="mb-2 f-w-400 text-muted">Réclamations</h6>
-          <h4 class="mb-3">{{ $stats['reclamations'] ?? 0 }} <span class="badge bg-light-danger border border-danger"><i class="ti ti-alert-circle"></i> En cours</span></h4>
-          <p class="mb-0 text-muted text-sm">Tickets ouverts</p>
+          <h6 class="mb-2 f-w-400 text-muted">Demandes Refusées</h6>
+          <h4 class="mb-3">{{ $stats['demandes_refusees'] ?? 0 }} <span class="badge bg-light-danger border border-danger"><i class="ti ti-x"></i> Refusées</span></h4>
+          <p class="mb-0 text-muted text-sm">Demandes traitées et refusées</p>
         </div>
       </div>
     </div>

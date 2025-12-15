@@ -23,6 +23,9 @@ Route::get('/', function () {
     return view('accueil');
 })->name('home');
 
+Route::get('/suivi-demande', [DemandeController::class, 'suiviForm'])->name('demande.suivi.form');
+Route::post('/suivi-demande', [DemandeController::class, 'suiviCheck'])->name('demande.suivi.check');
+
 // Authentification de l'étudiant (héritage de l'ancienne logique, conservée pour compatibilité)
 Route::post('/login', [StudentAuthController::class, 'login'])->name('student.login');
 Route::get('/logout', [StudentAuthController::class, 'logout'])->name('student.logout');

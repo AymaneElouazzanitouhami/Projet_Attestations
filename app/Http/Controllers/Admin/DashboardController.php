@@ -16,10 +16,9 @@ class DashboardController extends Controller
     {
         // 1. Récupération des statistiques pour les cartes
         $stats = [
-            'total_demandes' => Demande::count(),
-            'total_etudiants' => Etudiant::count(),
-            'en_attente' => Demande::where('statut', 'en_attente')->count(),
-            'reclamations' => Reclamation::where('statut', 'soumise')->count(),
+            'demandes_validees' => Demande::where('statut', 'validee')->count(),
+            'demandes_en_attente' => Demande::where('statut', 'en_attente')->count(),
+            'demandes_refusees' => Demande::where('statut', 'refusee')->count(),
         ];
 
         // 2. Récupération des dernières demandes pour le tableau

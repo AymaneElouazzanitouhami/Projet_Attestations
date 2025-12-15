@@ -25,7 +25,24 @@ class GestionReclamationController extends Controller
             $query->where('statut', $statutDb);
         }
 
-        $reclamations = $query->paginate(10)->appends(['statut' => $statut]);
+        // Filtre par type de document (via la demande concernée)
+        $typeDocument = $request->input('type_document');
+        if (!empty($typeDocument) && $typeDocument !== 'all') {
+            $query->whereHas('demande', function ($q) use ($typeDocument) {
+                $q->where('type_document', $typeDocument);
+            });
+        }
+
+        // Recherche par Numéro de demande concernée (id_demande_concernee)
+        if ($request->has('search') && !empty($request->search)) {
+            $raw = trim((string) $request->search);
+            $digits = preg_replace('/\D+/', '', $raw);
+            if ($digits !== '') {
+                $query->where('id_demande_concernee', (int) $digits);
+            }
+        }
+
+        $reclamations = $query->paginate(10)->appends($request->except('page'));
 
         return view('admin.reclamations', compact('reclamations', 'statut'));
     }
