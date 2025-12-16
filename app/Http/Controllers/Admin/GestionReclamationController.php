@@ -14,7 +14,7 @@ class GestionReclamationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Reclamation::with(['etudiant', 'demande'])->latest('date_reclamation');
+        $query = Reclamation::with(['etudiant', 'demande'])->orderBy('id_reclamation', 'asc');
 
         $statut = $request->input('statut', 'non_traitee');
 

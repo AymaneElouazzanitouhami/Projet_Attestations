@@ -21,7 +21,7 @@ class GestionDemandeController extends Controller
     // Afficher la liste des demandes avec filtres
     public function index(Request $request)
     {
-        $query = Demande::with('etudiant')->latest('date_demande');
+        $query = Demande::with('etudiant')->orderBy('id_demande', 'asc');
 
         // Filtre par statut — par défaut on affiche les demandes "en_attente"
         $statut = $request->input('statut', 'en_attente');

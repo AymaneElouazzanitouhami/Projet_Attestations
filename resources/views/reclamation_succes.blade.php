@@ -16,10 +16,8 @@
             <div class="col-lg-8 d-flex justify-content-center" style="gap: 20px;">
                 
                 <!-- Bouton Secondaire -->
-                <a href="{{ route('demande.formulaire') }}" class="btn-succes-secondaire">Faire une demande</a>
                 
                 <!-- Bouton Principal -->
-                <a href="{{ route('reclamation.formulaire') }}" class="btn-succes-primaire">Déposer une autre réclamation</a>
 
             </div>
         </div>
