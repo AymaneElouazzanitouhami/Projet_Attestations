@@ -18,10 +18,8 @@
                 {{-- CORRECTION : On utilise des classes CSS dédiées pour un style robuste --}}
                 
                 <!-- Bouton Secondaire (style "outline") -->
-                <a href="{{ route('demande.formulaire') }}" class="btn-succes-secondaire">Faire une autre demande</a>
                 
                 <!-- Bouton Principal (style plein) -->
-                <a href="{{ route('reclamation.formulaire') }}" class="btn-succes-primaire">Déposer une réclamation</a>
 
             </div>
         </div>
