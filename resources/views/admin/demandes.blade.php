@@ -138,7 +138,7 @@
                                 @endswitch
                             </span>
                             @if($demande->type_document == 'releve_notes')
-                                <small class="text-muted">{{ $demande->annee_universitaire }} - S{{ $demande->semestre }}</small>
+                                <small class="text-muted">{{ $demande->annee_universitaire }}{{ $demande->semestre }}</small>
                             @endif
                         </td>
                         <td>{{ $demande->date_demande->format('d/m/Y') }}</td>
