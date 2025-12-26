@@ -23,11 +23,42 @@ class GestionDemandeController extends Controller
     {
         $query = Demande::with('etudiant')->orderBy('id_demande', 'asc');
 
-        // Filtre par statut — par défaut on affiche les demandes "en_attente"
-        $statut = $request->input('statut', 'en_attente');
-        if ($statut !== 'all') {
-            $query->where('statut', $statut);
+        // Afficher uniquement les demandes en attente (celles qui nécessitent une action admin)
+        $query->where('statut', 'en_attente');
+
+        // Filtre par type de document (onglets) — on affiche tous les statuts pour le type sélectionné
+        $typeDocument = $request->input('type_document', 'scolarite');
+        if (!in_array($typeDocument, ['scolarite', 'releve_notes', 'reussite', 'convention_stage'], true)) {
+            $typeDocument = 'scolarite';
         }
+        $query->where('type_document', $typeDocument);
+
+        // Recherche par Numéro de demande (id_demande)
+        if ($request->has('search') && !empty($request->search)) {
+            $raw = trim((string) $request->search);
+            $digits = preg_replace('/\D+/', '', $raw);
+            if ($digits !== '') {
+                $query->where('id_demande', (int) $digits);
+            }
+        }
+
+        // Paginate and preserve query string
+        $demandes = $query->paginate(10)->appends($request->except('page'));
+
+        return view('admin.demandes', compact('demandes'));
+    }
+
+    // Afficher l'historique des demandes (uniquement validées / refusées)
+    public function historique(Request $request)
+    {
+        $query = Demande::with('etudiant')->orderBy('id_demande', 'asc');
+
+        // Filtre par statut — par défaut on affiche les demandes "validee" (historique)
+        $statut = $request->input('statut', 'validee');
+        if (!in_array($statut, ['validee', 'refusee'], true)) {
+            $statut = 'validee';
+        }
+        $query->where('statut', $statut);
 
         // Filtre par type de document
         $typeDocument = $request->input('type_document');
@@ -47,7 +78,7 @@ class GestionDemandeController extends Controller
         // Paginate and preserve query string
         $demandes = $query->paginate(10)->appends($request->except('page'));
 
-        return view('admin.demandes', compact('demandes'));
+        return view('admin.historique', compact('demandes'));
     }
 
     // Afficher le document PDF

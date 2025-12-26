@@ -95,7 +95,7 @@
         <div class="row gy-4">
             <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
                 <div class="team-member d-flex align-items-start">
-                    <div class="pic"><img src="https://ensate.uae.ac.ma/wp-content/themes/ensat-theme/src/director.jpg" class="img-fluid" alt=""></div>
+                    <div class="pic"><img src="" class="img-fluid" alt=""></div>
                     <div class="member-info">
                         <h4>Mot du Directeur</h4>
                         <span>Pr. Kamal Reklaoui Directeur de l'École Nationale des Sciences Appliquées de Tétouan</span>
@@ -122,8 +122,8 @@
                         <div>
                             <h3>Accéder directement au Espace de Demande attestation ou Déposer une réclamation</h3>
                             <p>Pas d'identification préalable : cliquez ci-dessous pour saisir votre CIN, Apogée et Email puis choisir Réclamation ou Demande d'attestation.</p>
-                            <a class="btn btn-outline-primary mt-3 me-2" href="{{ route('demande.suivi.form') }}">Suivre l'etat de votre demande</a>
                             <a class="btn btn-primary mt-3" href="{{ route('demande_reclamation.formulaire') }}">Faire DEMANDE ou RECLAMATION</a>
+                            <a class="btn btn-outline-primary mt-3 me-2" href="{{ route('demande.suivi.form') }}">Suivre l'etat de votre demande</a>
                         </div>
                     </div>
                 </div>

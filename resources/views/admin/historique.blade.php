@@ -1,10 +1,10 @@
 @extends('admin.layouts.admin_layout')
 
-@section('title', 'Gestion des Demandes')
+@section('title', "Historique des Demandes d'Attestation")
 
 @section('breadcrumb')
   <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-  <li class="breadcrumb-item" aria-current="page">Demandes</li>
+  <li class="breadcrumb-item" aria-current="page">Historique</li>
 @endsection
 
 @section('content')
@@ -27,7 +27,7 @@
 
     <div class="card">
       <div class="card-header">
-        <h5>Liste des Demandes d'Attestation</h5>
+        <h5>Historique des Demandes d'Attestation</h5>
       </div>
       <div class="card-body">
         
@@ -38,23 +38,39 @@
                     $keepParams = [];
                     if (request('search')) {
                         $keepParams = ['search' => request('search')];
+                    } elseif (request('type_document') && request('type_document') !== 'all') {
+                        $keepParams = ['type_document' => request('type_document')];
                     }
                 @endphp
                 <div class="btn-group" role="group">
-                    <a href="{{ route('admin.demandes', array_merge(['type_document' => 'scolarite'], $keepParams)) }}" class="btn {{ request('type_document', 'scolarite') == 'scolarite' ? 'btn-primary' : 'btn-outline-primary' }}">Attestation de Scolarité</a>
-                    <a href="{{ route('admin.demandes', array_merge(['type_document' => 'releve_notes'], $keepParams)) }}" class="btn {{ request('type_document') == 'releve_notes' ? 'btn-primary' : 'btn-outline-primary' }}">Relevé de Notes</a>
-                    <a href="{{ route('admin.demandes', array_merge(['type_document' => 'reussite'], $keepParams)) }}" class="btn {{ request('type_document') == 'reussite' ? 'btn-primary' : 'btn-outline-primary' }}">Attestation de Réussite</a>
-                    <a href="{{ route('admin.demandes', array_merge(['type_document' => 'convention_stage'], $keepParams)) }}" class="btn {{ request('type_document') == 'convention_stage' ? 'btn-primary' : 'btn-outline-primary' }}">Convention de Stage</a>
+                    <a href="{{ route('admin.historique', array_merge(['statut' => 'validee'], $keepParams)) }}" class="btn {{ request('statut') == 'validee' || !request('statut') ? 'btn-primary' : 'btn-outline-primary' }}">Validées</a>
+                    <a href="{{ route('admin.historique', array_merge(['statut' => 'refusee'], $keepParams)) }}" class="btn {{ request('statut') == 'refusee' ? 'btn-primary' : 'btn-outline-primary' }}">Refusées</a>
                 </div>
             </div>
             <div class="col-md-6 mb-2">
-                <form action="{{ route('admin.demandes') }}" method="GET">
-                    <input type="hidden" name="type_document" value="{{ request('type_document', 'scolarite') }}">
-                    <div class="input-group">
-                        <input type="text" name="search" class="form-control" placeholder="Rechercher par Numéro de Demande..." value="{{ request('search') }}">
-                        <button class="btn btn-primary" type="submit"><i class="ti ti-search"></i></button>
+                <div class="row g-2">
+                    <div class="col-md-5">
+                        <form action="{{ route('admin.historique') }}" method="GET">
+                            <input type="hidden" name="statut" value="{{ request('statut', 'validee') }}">
+                            <select name="type_document" class="form-select" onchange="this.form.submit()">
+                                <option value="all" {{ request('type_document', 'all') == 'all' ? 'selected' : '' }}>Tous les types</option>
+                                <option value="scolarite" {{ request('type_document') == 'scolarite' ? 'selected' : '' }}>Attestation de Scolarité</option>
+                                <option value="releve_notes" {{ request('type_document') == 'releve_notes' ? 'selected' : '' }}>Relevé de Notes</option>
+                                <option value="reussite" {{ request('type_document') == 'reussite' ? 'selected' : '' }}>Attestation de Réussite</option>
+                                <option value="convention_stage" {{ request('type_document') == 'convention_stage' ? 'selected' : '' }}>Convention de Stage</option>
+                            </select>
+                        </form>
                     </div>
-                </form>
+                    <div class="col-md-7">
+                        <form action="{{ route('admin.historique') }}" method="GET">
+                            <input type="hidden" name="statut" value="{{ request('statut', 'validee') }}">
+                            <div class="input-group">
+                                <input type="text" name="search" class="form-control" placeholder="Rechercher par Numéro de demande..." value="{{ request('search') }}">
+                                <button class="btn btn-primary" type="submit"><i class="ti ti-search"></i></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
 

@@ -200,7 +200,7 @@
                 <p>Signature</p>
             </div>
             <div class="signature-box">
-                <p><strong>L'École</strong></p>
+                <p><strong>Encadrant</strong></p>
                 <p>{{ $convention->nom_encadrant_ecole }}</p>
                 <br><br><br>
                 <p>Signature</p>

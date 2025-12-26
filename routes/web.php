@@ -48,6 +48,7 @@ Route::prefix('admin')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/demandes', [GestionDemandeController::class, 'index'])->name('admin.demandes');
+    Route::get('/historique', [GestionDemandeController::class, 'historique'])->name('admin.historique');
     Route::get('/demandes/{id}/document', [GestionDemandeController::class, 'showDocument'])->name('admin.demandes.document');
     Route::post('/demandes/{id}/valider', [GestionDemandeController::class, 'valider'])->name('admin.demandes.valider');
     Route::post('/demandes/{id}/refuser', [GestionDemandeController::class, 'refuser'])->name('admin.demandes.refuser');
