@@ -11,6 +11,14 @@
             color: #333;
             line-height: 1.5;
         }
+        .pdf-logo {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            width: 90px;
+            height: auto;
+            z-index: 10;
+        }
         .header {
             text-align: center;
             margin-bottom: 30px;
@@ -88,6 +96,25 @@
     </style>
 </head>
 <body>
+
+    @php
+        $canRenderLogo = extension_loaded('gd');
+        $logoPath = resource_path('views/images/ensa.png');
+        if (!file_exists($logoPath)) {
+            $logoPath = resource_path('images/ensa.png');
+        }
+
+        $logoBase64 = null;
+        if ($canRenderLogo && file_exists($logoPath)) {
+            $logoType = pathinfo($logoPath, PATHINFO_EXTENSION);
+            $logoData = file_get_contents($logoPath);
+            $logoBase64 = 'data:image/' . $logoType . ';base64,' . base64_encode($logoData);
+        }
+    @endphp
+
+    @if($logoBase64)
+        <img src="{{ $logoBase64 }}" class="pdf-logo" alt="Logo ENSA">
+    @endif
 
     <div class="header">
         <h1>ENSA Tétouan</h1>
