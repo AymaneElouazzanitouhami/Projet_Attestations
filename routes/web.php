@@ -52,6 +52,7 @@ Route::prefix('admin')->group(function () {
     Route::get('/demandes/{id}/document', [GestionDemandeController::class, 'showDocument'])->name('admin.demandes.document');
     Route::post('/demandes/{id}/valider', [GestionDemandeController::class, 'valider'])->name('admin.demandes.valider');
     Route::post('/demandes/{id}/refuser', [GestionDemandeController::class, 'refuser'])->name('admin.demandes.refuser');
+    Route::post('/demandes/{id}/renvoyer', [GestionDemandeController::class, 'renvoyer'])->name('admin.demandes.renvoyer');
     Route::get('/reclamations', [GestionReclamationController::class, 'index'])->name('admin.reclamations');
     Route::post('/reclamations/{id}/traiter', [GestionReclamationController::class, 'traiter'])->name('admin.reclamations.traiter');
 

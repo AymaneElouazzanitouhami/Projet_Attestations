@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Demande;
+use App\Models\Reclamation;
 use App\Models\HistoriqueAction;
 use App\Models\ConventionStage;
 use Illuminate\Support\Facades\Auth;
@@ -48,25 +49,39 @@ class GestionDemandeController extends Controller
         return view('admin.demandes', compact('demandes'));
     }
 
-    // Afficher l'historique des demandes (uniquement validées / refusées)
     public function historique(Request $request)
     {
+        $categorie = $request->input('categorie', 'demandes');
+        if (!in_array($categorie, ['demandes', 'reclamations'], true)) {
+            $categorie = 'demandes';
+        }
+
+        if ($categorie === 'reclamations') {
+            $query = Reclamation::with(['etudiant', 'demande'])->orderBy('id_reclamation', 'asc');
+            $query->where('statut', 'cloturee');
+            if ($request->has('search') && !empty($request->search)) {
+                $raw = trim((string) $request->search);
+                $digits = preg_replace('/\D+/', '', $raw);
+                if ($digits !== '') {
+                    $query->where('id_demande_concernee', (int) $digits);
+                }
+            }
+
+            $reclamations = $query->paginate(10)->appends($request->except('page'));
+
+            return view('admin.historique', [
+                'categorie' => $categorie,
+                'reclamations' => $reclamations,
+            ]);
+        }
         $query = Demande::with('etudiant')->orderBy('id_demande', 'asc');
 
-        // Filtre par statut — par défaut on affiche les demandes "validee" (historique)
         $statut = $request->input('statut', 'validee');
         if (!in_array($statut, ['validee', 'refusee'], true)) {
             $statut = 'validee';
         }
         $query->where('statut', $statut);
 
-        // Filtre par type de document
-        $typeDocument = $request->input('type_document');
-        if (!empty($typeDocument) && $typeDocument !== 'all') {
-            $query->where('type_document', $typeDocument);
-        }
-
-        // Recherche par Numéro de demande (id_demande)
         if ($request->has('search') && !empty($request->search)) {
             $raw = trim((string) $request->search);
             $digits = preg_replace('/\D+/', '', $raw);
@@ -75,10 +90,71 @@ class GestionDemandeController extends Controller
             }
         }
 
-        // Paginate and preserve query string
         $demandes = $query->paginate(10)->appends($request->except('page'));
 
-        return view('admin.historique', compact('demandes'));
+        return view('admin.historique', [
+            'categorie' => $categorie,
+            'demandes' => $demandes,
+            'statut' => $statut,
+        ]);
+    }
+    public function renvoyer($id)
+    {
+        $demande = Demande::with('etudiant.notes')->findOrFail($id);
+
+        if ($demande->statut !== 'validee') {
+            return back()->with('error', 'Seules les demandes validées peuvent être renvoyées.');
+        }
+
+        $etudiant = $demande->etudiant;
+        $recipient = $etudiant->email ?? null;
+        if (!$recipient) {
+            return back()->with('error', 'Adresse email de l\'étudiant introuvable.');
+        }
+
+        $pdfContent = null;
+        $fileName = null;
+
+        if ($demande->type_document === 'convention_stage') {
+            $fileName = 'convention_stage_' . $demande->id_demande . '.pdf';
+        } else {
+            $fileNames = [
+                'scolarite' => 'attestation_scolarite.pdf',
+                'non_redoublement' => 'attestation_non_redoublement.pdf',
+                'reussite' => 'attestation_reussite.pdf',
+                'releve_notes' => 'releve_notes.pdf'
+            ];
+            $fileName = $fileNames[$demande->type_document] ?? 'attestation.pdf';
+        }
+
+        $filePath = 'attestations/' . $demande->id_demande . '_' . $fileName;
+        if ($demande->type_document === 'convention_stage') {
+            $convention = ConventionStage::where('id_demande', $demande->id_demande)->firstOrFail();
+            $pdf = Pdf::loadView('pdf.convention_stage_template', compact('demande', 'etudiant', 'convention'));
+            $pdfContent = $pdf->output();
+        } else {
+            $pdf = Pdf::loadView('pdf.attestation_template', compact('demande', 'etudiant'));
+            $pdfContent = $pdf->output();
+        }
+
+        Storage::disk('public')->put($filePath, $pdfContent);
+
+        try {
+            Mail::to($recipient)->send(new DemandeValideeMail($demande, $etudiant, $pdfContent, $fileName));
+        } catch (\Exception $e) {
+            Log::error('Erreur lors du renvoi du document par email: ' . $e->getMessage());
+            return back()->with('error', 'Erreur lors du renvoi du document.');
+        }
+
+        HistoriqueAction::create([
+            'id_demande' => $demande->id_demande,
+            'id_admin' => Auth::guard('admin')->id(),
+            'action_effectuee' => 'Renvoyer',
+            'details' => 'Document validé renvoyé par email.',
+            'date_action' => now()
+        ]);
+
+        return back()->with('success', 'Document renvoyé avec succès.');
     }
 
     // Afficher le document PDF

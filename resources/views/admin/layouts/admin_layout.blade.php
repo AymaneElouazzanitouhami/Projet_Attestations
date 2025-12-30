@@ -80,17 +80,17 @@
             </a>
           </li>
 
-          <li class="pc-item {{ request()->routeIs('admin.historique') ? 'active' : '' }}">
-            <a href="{{ route('admin.historique') }}" class="pc-link">
-              <span class="pc-micon"><i class="ti ti-history"></i></span>
-              <span class="pc-mtext">Historique</span>
-            </a>
-          </li>
-
           <li class="pc-item {{ request()->routeIs('admin.reclamations') ? 'active' : '' }}">
             <a href="{{ route('admin.reclamations') }}" class="pc-link">
               <span class="pc-micon"><i class="ti ti-alert-circle"></i></span>
               <span class="pc-mtext">Réclamations</span>
+            </a>
+          </li>
+
+          <li class="pc-item {{ request()->routeIs('admin.historique') ? 'active' : '' }}">
+            <a href="{{ route('admin.historique') }}" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-history"></i></span>
+              <span class="pc-mtext">Historique</span>
             </a>
           </li>
 
