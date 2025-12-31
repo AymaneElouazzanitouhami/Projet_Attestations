@@ -85,29 +85,6 @@
     </div>
 </section><!-- /Services Section -->
 
-<!-- Team Section -->
-<section id="team" class="team section">
-    <div class="container section-title" data-aos="fade-up">
-        <h2>Équipe Administrative</h2>
-        <p>L'équipe de l'ENSA Tétouan dédiée au traitement rapide et efficace de vos demandes.</p>
-    </div>
-    <div class="container">
-        <div class="row gy-4">
-            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
-                <div class="team-member d-flex align-items-start">
-                    <div class="pic"><img src="" class="img-fluid" alt=""></div>
-                    <div class="member-info">
-                        <h4>Mot du Directeur</h4>
-                        <span>Pr. Kamal Reklaoui Directeur de l'École Nationale des Sciences Appliquées de Tétouan</span>
-                        <p>L'enseignement supérieur et la recherche sont les leviers de la puissance et du rayonnement d'un pays, ils demeurent cruciaux pour la construction de l'avenir.</p>
-                    </div>
-                </div>
-            </div><!-- End Team Member -->
-             
-        </div>
-    </div>
-</section><!-- /Team Section -->
-
 <!-- Contact Section -->
 <section id="contact" class="contact section">
     <div class="container section-title" data-aos="fade-up">

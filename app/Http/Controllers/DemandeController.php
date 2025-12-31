@@ -126,7 +126,7 @@ class DemandeController extends Controller
         }
 
         // Contrainte pour l'attestation de scolarité (une par année académique)
-        if ($typeDocument == 'scolarite') {
+        if ($typeDocument == 'scolarite' && false) {
             $startAcademicYearDate = Carbon::create($currentDate->month >= 9 ? $currentDate->year : $currentDate->year - 1, 9, 1);
             $demandeExistante = Demande::where('id_etudiant', $etudiantFromDB->id_etudiant)
                 ->where('type_document', 'scolarite')
@@ -173,10 +173,17 @@ class DemandeController extends Controller
             $recipient = $etudiantFromDB->email;
             if ($recipient) {
                 $idDemande = $demande->id_demande;
+                $typeLabels = [
+                    'scolarite' => 'Attestation de scolarité',
+                    'releve_notes' => 'Relevé de notes',
+                    'reussite' => 'Attestation de réussite',
+                    'convention_stage' => 'Convention de stage',
+                ];
+                $typeLabel = $typeLabels[$typeDocument] ?? $typeDocument;
                 Mail::raw(
-                    "Votre demande a été enregistrée avec succès.\nNuméro de demande : {$idDemande}\n",
-                    function ($message) use ($recipient, $idDemande) {
-                        $message->to($recipient)->subject("Confirmation de demande #{$idDemande}");
+                    "Votre demande a été enregistrée avec succès.\nNuméro de demande : {$idDemande}\nType de document : {$typeLabel}\n",
+                    function ($message) use ($recipient, $idDemande, $typeLabel) {
+                        $message->to($recipient)->subject("Confirmation de demande #{$idDemande} - {$typeLabel}");
                     }
                 );
             }
