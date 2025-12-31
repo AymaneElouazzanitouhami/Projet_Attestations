@@ -10,10 +10,11 @@
             font-size: 12px;
             color: #333;
             line-height: 1.5;
+            position: relative;
         }
         .pdf-logo {
-            position: fixed;
-            top: 25px;
+            position: absolute;
+            top: 10px;
             left: 25px;
             width: 90px;
             height: auto;

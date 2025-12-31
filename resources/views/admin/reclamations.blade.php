@@ -29,26 +29,24 @@
             <div class="col-md-6 mb-2">
                 @php
                     $keepParams = [];
-                    if (request('type_document') && request('type_document') !== 'all') {
-                        $keepParams = ['type_document' => request('type_document')];
+                    if (request('search')) {
+                        $keepParams = ['search' => request('search')];
                     }
                 @endphp
                 <div class="btn-group" role="group">
-                    <a href="{{ route('admin.reclamations', array_merge(['statut' => 'non_traitee'], $keepParams)) }}" class="btn {{ $statut == 'non_traitee' ? 'btn-primary' : 'btn-outline-primary' }}">Non traitées</a>
-                    <a href="{{ route('admin.reclamations', array_merge(['statut' => 'cloturee'], $keepParams)) }}" class="btn {{ $statut == 'cloturee' ? 'btn-primary' : 'btn-outline-primary' }}">Clôturées</a>
-                    <a href="{{ route('admin.reclamations', array_merge(['statut' => 'all'], $keepParams)) }}" class="btn {{ $statut == 'all' ? 'btn-primary' : 'btn-outline-primary' }}">Toutes</a>
+                    <a href="{{ route('admin.reclamations', array_merge(['type_document' => 'scolarite'], $keepParams)) }}" class="btn {{ request('type_document', 'scolarite') == 'scolarite' ? 'btn-primary' : 'btn-outline-primary' }}">Attestation de Scolarité</a>
+                    <a href="{{ route('admin.reclamations', array_merge(['type_document' => 'releve_notes'], $keepParams)) }}" class="btn {{ request('type_document') == 'releve_notes' ? 'btn-primary' : 'btn-outline-primary' }}">Relevé de Notes</a>
+                    <a href="{{ route('admin.reclamations', array_merge(['type_document' => 'reussite'], $keepParams)) }}" class="btn {{ request('type_document') == 'reussite' ? 'btn-primary' : 'btn-outline-primary' }}">Attestation de Réussite</a>
+                    <a href="{{ route('admin.reclamations', array_merge(['type_document' => 'convention_stage'], $keepParams)) }}" class="btn {{ request('type_document') == 'convention_stage' ? 'btn-primary' : 'btn-outline-primary' }}">Convention de Stage</a>
                 </div>
             </div>
             <div class="col-md-6 mb-2">
                 <form action="{{ route('admin.reclamations') }}" method="GET">
-                    <input type="hidden" name="statut" value="{{ $statut }}">
-                    <select name="type_document" class="form-select" onchange="this.form.submit()">
-                        <option value="all" {{ request('type_document', 'all') == 'all' ? 'selected' : '' }}>Tous les types</option>
-                        <option value="scolarite" {{ request('type_document') == 'scolarite' ? 'selected' : '' }}>Attestation de Scolarité</option>
-                        <option value="releve_notes" {{ request('type_document') == 'releve_notes' ? 'selected' : '' }}>Relevé de Notes</option>
-                        <option value="reussite" {{ request('type_document') == 'reussite' ? 'selected' : '' }}>Attestation de Réussite</option>
-                        <option value="convention_stage" {{ request('type_document') == 'convention_stage' ? 'selected' : '' }}>Convention de Stage</option>
-                    </select>
+                    <input type="hidden" name="type_document" value="{{ request('type_document', 'scolarite') }}">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="Rechercher par Numéro de Demande..." value="{{ request('search') }}">
+                        <button class="btn btn-primary" type="submit"><i class="ti ti-search"></i></button>
+                    </div>
                 </form>
             </div>
         </div>

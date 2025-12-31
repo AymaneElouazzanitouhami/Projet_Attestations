@@ -16,18 +16,19 @@ class GestionReclamationController extends Controller
     {
         $query = Reclamation::with(['etudiant', 'demande'])->orderBy('id_reclamation', 'asc');
 
-        $statut = $request->input('statut', 'non_traitee');
+        $statut = 'non_traitee';
 
         // Filtre par statut
-        if ($statut !== 'all') {
-            // Mapping des noms de filtres vers les valeurs BDD
-            $statutDb = ($statut == 'non_traitee') ? 'soumise' : 'cloturee';
-            $query->where('statut', $statutDb);
-        }
+        // Mapping des noms de filtres vers les valeurs BDD
+        $statutDb = 'soumise';
+        $query->where('statut', $statutDb);
 
         // Filtre par type de document (via la demande concernée)
-        $typeDocument = $request->input('type_document');
-        if (!empty($typeDocument) && $typeDocument !== 'all') {
+        $typeDocument = $request->input('type_document', 'scolarite');
+        if (!in_array($typeDocument, ['scolarite', 'releve_notes', 'reussite', 'convention_stage'], true)) {
+            $typeDocument = 'scolarite';
+        }
+        if (!empty($typeDocument)) {
             $query->whereHas('demande', function ($q) use ($typeDocument) {
                 $q->where('type_document', $typeDocument);
             });
@@ -42,7 +43,10 @@ class GestionReclamationController extends Controller
             }
         }
 
-        $reclamations = $query->paginate(10)->appends($request->except('page'));
+        $reclamations = $query->paginate(10)->appends([
+            'type_document' => $typeDocument,
+            'search' => $request->input('search'),
+        ]);
 
         return view('admin.reclamations', compact('reclamations', 'statut'));
     }
