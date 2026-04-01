@@ -1,61 +1,110 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🎓 Espace Étudiant & Administrateur — Laravel
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+<div align="center">
 
-## About Laravel
+![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
+![Jira](https://img.shields.io/badge/Jira-0052CC?style=for-the-badge&logo=jira&logoColor=white)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Application web de gestion des demandes administratives, réclamations et notifications pour les étudiants et administrateurs — **ENSA Tétouan 2025/2026**.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+</div>
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 📋 Présentation
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Cette application permet aux étudiants de soumettre des **demandes administratives** et des **réclamations**, et aux administrateurs de les traiter via un **dashboard complet**. Un système d'**emails automatiques** envoie les attestations et notifications.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## ✨ Fonctionnalités
 
-## Laravel Sponsors
+### 👤 Espace Étudiant
+- Authentification et gestion du profil
+- Soumission de demandes administratives (formulaire)
+- Dépôt de réclamations
+- Suivi de l'état des demandes en temps réel
+- Réception de notifications et attestations par email
+- Historique des demandes et réclamations
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 🛡️ Espace Administrateur
+- Dashboard avec statistiques globales
+- Gestion et traitement des demandes étudiantes
+- Gestion des réclamations (accepter / refuser / répondre)
+- Gestion des comptes étudiants
+- Envoi d'emails et d'attestations automatiques
 
-### Premium Partners
+### 📧 Système de Notification Email
+- Envoi automatique lors du changement de statut d'une demande
+- Génération et envoi d'attestations par email
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+---
 
-## Contributing
+## 🔧 Technologies
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Catégorie | Technologie |
+|-----------|-------------|
+| Framework | Laravel |
+| Langage | PHP |
+| Base de données | MySQL |
+| Frontend | Bootstrap + Blade |
+| Emails | Laravel Mail (SMTP) |
+| Versioning | GitHub |
+| Gestion de projet | Jira (Agile Scrum) |
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## ✅ Prérequis
 
-## Security Vulnerabilities
+- [PHP 8.1+](https://www.php.net/)
+- [Composer](https://getcomposer.org/)
+- [MySQL](https://www.mysql.com/)
+- [Node.js & npm](https://nodejs.org/) (pour les assets)
+- [Git](https://git-scm.com/)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## 🚀 Installation
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 1. Cloner le dépôt
+
+```bash
+git clone https://github.com/votre-utilisateur/espace-etudiant.git
+cd espace-etudiant
+```
+
+### 2. Installer les dépendances
+
+```bash
+composer install
+npm install && npm run build
+```
+
+### 3. Configurer l'environnement
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+Éditez `.env` avec vos paramètres :
+
+```env
+DB_DATABASE=
+DB_USERNAME=root
+DB_PASSWORD=votre_mot_de_passe
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=votre@email.com
+MAIL_PASSWORD=votre_mot_de_passe
+MAIL_FROM_ADDRESS=no-reply@ensa.ma
+
+
+## 📄 Licence
+
+Projet académique — ENSA Tétouan © 2025-2026
